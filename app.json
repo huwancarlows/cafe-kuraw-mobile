@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "WageCalculatorApp",
+    "slug": "WageCalculatorApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets//ics.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "59e42461-4d18-4c56-bd27-d4e57bdf3ed5"
+      }
+    },
+    "owner": "huwankarlos"
+  }
+}
