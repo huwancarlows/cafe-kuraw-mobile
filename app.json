@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "WageCalculatorApp",
+    "name": "Wage Calculator",
     "slug": "WageCalculatorApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,17 +13,41 @@
       "backgroundColor": "#000000"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to upload proof of payment.",
+        "NSCameraUsageDescription": "This app requires access to your camera to capture proof of payment."
+      },
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./assets/ics.png",
+        "backgroundColor": "#000000"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET" // Added permission for internet access
+      ],
+      "package": "com.huwankarlos.kurawcoffeeshopapp",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+"plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true // Added to enable HTTP requests
+          }
+        }
+      ]
+    ],
+
     "extra": {
       "eas": {
         "projectId": "59e42461-4d18-4c56-bd27-d4e57bdf3ed5"
