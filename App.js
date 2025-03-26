@@ -15,8 +15,9 @@ import NightShiftDiff from './pages/NightShiftDiff';
 import ThirteenthMonthPay from './pages/ThirteenthMonthPay';
 import SIL from './pages/SIL';
 import Admin from './pages/Admin'; // ✅ Import the Admin Page.
-import Admin from './pages/SeparationPay';
 import SeparationPay from './pages/SeparationPay';
+import RetirementPay from './pages/RetirementPay';
+import Conversion from './pages/Conversion'; // ✅ Import the Conversion Component
 
 const Stack = createNativeStackNavigator();
 
@@ -83,6 +84,11 @@ export default function App() {
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen
+                    name="RetirementPay"  
+                    component={RetirementPay}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
                     name="SeparationPay"  
                     component={SeparationPay}
                     options={{ headerShown: false }}
@@ -93,6 +99,7 @@ export default function App() {
                     options={{ headerShown: false }} // ✅ Add the Admin Page
                 />
             </Stack.Navigator>
+             <Conversion />
         </NavigationContainer>
     );
 }

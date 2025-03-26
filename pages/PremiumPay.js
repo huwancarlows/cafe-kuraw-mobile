@@ -29,23 +29,27 @@ const PremiumPay= () => {
             Alert.alert("Input Required", "Please fill out the required fields.");
             return;
         }
-        
+    
         if (!specialDays.trim()) {
-            Alert.alert("Input Required", "Please enter the number of special day/restday overtime.");
+            Alert.alert("Input Required", "Please enter the number of special day/rest day overtime.");
             return;
         }
-        
+    
         if (!dailyRate.trim()) {
             Alert.alert("Input Required", "Please enter the actual daily rate.");
             return;
         }
-
+    
         const numSpecialDays = parseFloat(specialDays) || 0;
         const rate = parseFloat(dailyRate) || 0;
-        const premiumPay = rate * 0.30 * numSpecialDays;
-        setTotalPremiumPay(premiumPay.toFixed(2));
-        setModalVisible(true); // Only show modal after calculating
+    
+        // Use Math.round() to get the nearest whole number
+        const premiumPay = Math.round(rate * 0.30 * numSpecialDays);
+    
+        setTotalPremiumPay(premiumPay);
+        setModalVisible(true); // Show modal after calculation
     };
+    
 
     const clearFields = () => {
         setSpecialDays('');

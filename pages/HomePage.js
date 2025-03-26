@@ -99,6 +99,8 @@ const HomePage = ({ navigation }) => {
             navigation.navigate('SIL');
         } else if (selectedComputation === 'separation_pay') {
             navigation.navigate('SeparationPay');
+        } else if (selectedComputation === 'retirement_pay') {
+            navigation.navigate('RetirementPay');
         } else {
             Alert.alert('Navigation not set for this computation type.');
         }
