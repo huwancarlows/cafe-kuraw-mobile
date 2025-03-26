@@ -5,7 +5,9 @@ import {
     TextInput,
     StyleSheet,
     Dimensions,
+    PixelRatio,
     TouchableOpacity,
+    Modal,
     ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,22 +26,9 @@ const CustomCheckbox = ({ label, value, onValueChange }) => (
     </TouchableOpacity>
 );
 
-const CustomRadioButton = ({ label, selected, onPress, disabled }) => (
-    <TouchableOpacity
-        style={[styles.radioRow, disabled && styles.disabled]}
-        onPress={!disabled ? onPress : null}
-    >
-        <View style={[styles.radioButton, selected && styles.radioButtonSelected]}>
-            {selected && <View style={styles.radioInner} />}
-        </View>
-        <Text style={[styles.radioLabel, disabled && styles.disabledText]}>{label}</Text>
-    </TouchableOpacity>
-);
-
 const OvertimePay = ({ navigation }) => {
     const [hoursOvertime, setHoursOvertime] = useState('');
     const [dailyRate, setdailyRate] = useState('');
-    const [worked, setWorked] = useState('');
     const [totalOvertimePay, setTotalOvertimePay] = useState('');
     
     const [restDay, setRestDay] = useState(false);
@@ -48,14 +37,31 @@ const OvertimePay = ({ navigation }) => {
     const [specialDay, setSpecialDay] = useState(false);
     const [doubleHoliday, setDoubleHoliday] = useState(false);
     const [doubleSpecial, setDoubleSpecial] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+
 
     const handleCalculate = () => {
+        if (!hoursOvertime.trim() && !dailyRate.trim()) {
+            Alert.alert("Input Required", "Please fill out the required fields.");
+            return;
+        }
+
+        if (!hoursOvertime.trim()) {
+        Alert.alert("Input Required", "Please enter the number of hours overtime.");
+        return;
+        }
+
+        if (!dailyRate.trim()) {
+        Alert.alert("Input Required", "Please enter the actual daily rate.");
+        return;
+        }
+
         const hours = parseFloat(hoursOvertime) || 0;
         const dailyRateValue = parseFloat(dailyRate) || 0;
     
         if (hours <= 0 || dailyRateValue <= 0) {
-            setTotalOvertimePay("0.00");
-            return;
+        Alert.alert("Invalid Input", "Hours and Daily Rate must be greater than zero.");
+        return;
         }
     
         const hourlyRate = dailyRateValue / 8;
@@ -63,21 +69,19 @@ const OvertimePay = ({ navigation }) => {
         let formulaApplied = false; // Track if any formula was used
     
         // **Check for INVALID Checkbox Combinations**
-        if (
-            (restDay && holiday && nightShift && specialDay && doubleHoliday && doubleSpecial) || // All checked
-            (holiday && doubleHoliday) || // Regular Holiday and Double Holiday
-            (specialDay && doubleSpecial) || // Special Holiday and Double Special Holiday
-            (holiday && doubleHoliday && restDay) || // Regular Holiday, Double Holiday, and Rest Day
-            (holiday && doubleHoliday && restDay && nightShift) || // Regular Holiday, Double Holiday, Rest Day, and Night Shift
-            (holiday && doubleHoliday && restDay && nightShift && specialDay) || // Regular Holiday, Double Holiday, Rest Day, Night Shift, and Special Holiday
-            (specialDay && doubleSpecial && restDay) || // Special Holiday, Double Special Holiday, and Rest Day
-            (specialDay && doubleSpecial && restDay && nightShift) || // Special Holiday, Double Special Holiday, Rest Day, and Night Shift
-            (doubleSpecial) // Double Special Holiday (alone)
-        ) {
-            setTotalOvertimePay("No Formula Calculated");
-            Alert.alert("Invalid Combination", "The selected conditions do not have a valid formula.");
-            return;
-        }
+            if (
+                (restDay && holiday && nightShift && specialDay && doubleHoliday && doubleSpecial) || // All checked
+                (holiday && doubleHoliday) || // Regular Holiday and Double Holiday
+                (specialDay && doubleSpecial) || // Special Holiday and Double Special Holiday
+                (holiday && doubleHoliday && restDay) || // Regular Holiday, Double Holiday, and Rest Day
+                (holiday && doubleHoliday && restDay && nightShift) || // Regular Holiday, Double Holiday, Rest Day, and Night Shift
+                (holiday && doubleHoliday && restDay && nightShift && specialDay) || // Regular Holiday, Double Holiday, Rest Day, Night Shift, and Special Holiday
+                (specialDay && doubleSpecial && restDay && nightShift) // Special Holiday, Double Special Holiday, Rest Day, and Night Shift
+            ) {
+                setTotalOvertimePay("No Formula Calculated");
+                Alert.alert("Invalid Combination", "The selected conditions do not have a valid formula.");
+                return;
+            }
     
         // Apply custom multipliers if any checkbox is checked
         if (doubleHoliday && restDay) {
@@ -136,7 +140,7 @@ const OvertimePay = ({ navigation }) => {
                 formulaApplied = true;
             }
         }
-    
+
         // **Default Case: If No Checkboxes are Checked**
         if (
             !restDay &&
@@ -158,17 +162,30 @@ const OvertimePay = ({ navigation }) => {
         }
     
         const overtimePay = hours * hourlyRate * multiplier;
-        setTotalOvertimePay(`PHP ${overtimePay.toFixed(2)}`);
+        setTotalOvertimePay(`${overtimePay.toFixed(2)}`);
+
+        setModalVisible(true);
     };
-    
-    
-    
+
 
     const handleNumberInput = (text, setter) => {
         const filteredText = text.replace(/[^0-9.]/g, ''); // Allow only numbers and decimal points
         setter(filteredText);
     };
-    
+
+    const clearFields = () => {
+        setHoursOvertime('');
+        setdailyRate('');
+        setTotalOvertimePay('');
+
+        setRestDay(false);
+        setHoliday(false);
+        setNightShift(false);
+        setSpecialDay(false);
+        setDoubleHoliday(false);
+        setDoubleSpecial(false);
+    };
+
 
     return (
         <View style={styles.container}>
@@ -195,7 +212,7 @@ const OvertimePay = ({ navigation }) => {
                     <Text style={styles.label}>Number of Hours Overtime</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder=""
+                        placeholder="Enter number of hours overtime"
                         value={hoursOvertime}
                         onChangeText={(text) => handleNumberInput(text, setHoursOvertime)}
                         keyboardType="numeric"
@@ -204,7 +221,7 @@ const OvertimePay = ({ navigation }) => {
                     <Text style={styles.label}>Actual Daily Rate:</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder=""
+                        placeholder="Enter actual daily rate"
                         value={dailyRate}
                         onChangeText={(text) => handleNumberInput(text, setdailyRate)}
                         keyboardType="numeric"
@@ -243,32 +260,79 @@ const OvertimePay = ({ navigation }) => {
                         />
                     </View>
 
+                    <TouchableOpacity style={styles.calculateButton} onPress={handleCalculate}>
+                        <Text style={styles.calculateButtonText}>CALCULATE</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={styles.clearButton} onPress={clearFields}>
+                        <Text style={styles.clearButtonText}>CLEAR</Text>
+                    </TouchableOpacity>
+                    
 
-                    <View style={styles.radioContainer}>
-                        <CustomRadioButton label=" Worked" selected={worked} onPress={() => setWorked(true)} />
-                        <CustomRadioButton label=" Unworked" selected={!worked} onPress={() => setWorked(false)} />
+                    <Modal visible={modalVisible} transparent animationType="fade">
+                    <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Calculation Results</Text>
+                
+                    <View style={styles.resultBox}>
+                    <View style={styles.resultRow}>
+                        <Text style={styles.resultLabel}>Number of Hours Overtime:</Text>
+                        <Text style={styles.resultValue}>{hoursOvertime || '0'}</Text>
                     </View>
 
-                    <Text style={styles.label}>Total Overtime Pay:</Text>
+                    <View style={styles.resultRow}>
+                        <Text style={styles.resultLabel}>Actual Daily Rate:</Text>
+                        <Text style={styles.resultValue}>₱{dailyRate || '0'}</Text>
+                    </View>
+
+                    <View style={styles.resultRow}>
+                    <Text style={styles.resultLabel}>Pay Category:</Text>
+                        <Text style={styles.payCategory} numberOfLines={2} ellipsizeMode="tail">
+                            {[
+                                restDay && 'Rest Day',
+                                holiday && 'Holiday',
+                                nightShift && 'Night Shift',
+                                specialDay && 'Special Day',
+                                doubleHoliday && 'Double Holiday',
+                                doubleSpecial && 'Double Special Holiday'
+                            ]
+                                .filter(Boolean)
+                                .join(', ') || 'Ordinary Day'}
+                        </Text>
+                    </View>
+                
+                    <View style={styles.resultRow}>
+                        <Text style={styles.resultLabel}>Total Overtime Pay:</Text>
+                        <Text style={styles.resultValue}>₱{totalOvertimePay || '0.00'}</Text>
+                    </View>
+
                     <Text
                         style={[
                             styles.result,
                             totalOvertimePay.includes("No Formula") && { color: "red", fontWeight: "bold" },
                         ]}
                     >
-                        {totalOvertimePay.includes("No Formula") ? "No Formula Calculated" : ` ${totalOvertimePay}`}
                     </Text>
-
-                    <TouchableOpacity style={styles.calculateButton} onPress={handleCalculate}>
-                        <Text style={styles.calculateButtonText}>CALCULATE</Text>
+                    </View>
+                
+                    <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                        <Text style={styles.closeButtonText}>CLOSE</Text>
                     </TouchableOpacity>
+                    </View>
+                    </View>
+                    </Modal>
+
                 </View>
             </ScrollView>
+
         </View>
     );
 };
 
-const { height, width } = Dimensions.get('window');
+const scaleFont = (size) => size * PixelRatio.getFontScale();
+const scaleSize = (size) => (size / 375) * width; // 375 is a common baseline width
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
@@ -279,38 +343,38 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
     header: {
-        flexDirection: 'row',  // Arrange items in a row
-        alignItems: 'center',  // Align vertically in the center
-        paddingTop: 60,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: height * 0.07, // 7% of screen height
+        paddingHorizontal: width * 0.05, // 5% of screen width
+        paddingBottom: height * 0.02, // 2% of screen height
     },
     backIcon: {
-        marginRight: 10, // Adds spacing between icon and title
+        marginRight: width * 0.02, // Dynamic spacing
     },
     headerTitle: {
-        fontSize: 32,
+        fontSize: width * 0.08, // Scaled font size
         fontWeight: 'bold',
         color: '#fff',
-        textAlign: 'center',
-        flex: 1, // Takes up available space to center properly
+        marginLeft: width * 0.11, 
+        flex: 1,
     },
     content: {
         flexGrow: 1,
         alignItems: 'center',
-        paddingBottom: 50,
+        paddingBottom: height * 0.05,
     },
     formContainer: {
-        top: '5%',
+        top: height * 0.01,
         width: '90%',
-        height: '100%',
+        height: height * 0.80, // 85% of screen height
         backgroundColor: '#fff',
         borderRadius: 20,
-        padding: 20,
+        padding: width * 0.05,
         elevation: 5,
     },
     label: {
-        fontSize: 18,
+        fontSize: width * 0.035, // Scales font size dynamically
         fontWeight: 'bold',
         color: '#000',
         marginBottom: 5,
@@ -319,87 +383,144 @@ const styles = StyleSheet.create({
         borderColor: '#000',
         borderWidth: 1,
         borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-        fontSize: 16,
+        paddingVertical: height * 0.015, // Adjusted for better touch targets
+        paddingHorizontal: width * 0.04,
+        marginBottom: height * 0.02,
+        fontSize: width * 0.04,
         color: '#000',
         backgroundColor: '#fff',
-    },
-    checkboxContainer: {
-        marginBottom: 20,
     },
     checkboxRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: height * 0.015,
     },
     checkbox: {
-        width: 24,
-        height: 24,
+        width: width * 0.06, // Scaled checkbox size
+        height: width * 0.06,
         borderWidth: 2,
         borderColor: '#000',
         borderRadius: 4,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 8,
+        marginRight: width * 0.02,
         backgroundColor: '#fff',
     },
     checkboxChecked: {
         backgroundColor: '#FFD700',
         borderColor: '#FFD700',
     },
-    checkboxLabel: {
-        fontSize: 16,
-        color: '#000',
-    },
-    radioContainer: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-around', 
-        marginBottom: 20 
-    },
-    radioRow: { 
-        flexDirection: 'row', 
-        alignItems: 'center' 
-    },
-    radioButton: { 
-        width: 24, 
-        height: 24, 
-        borderRadius: 12, 
-        borderWidth: 2, 
-        borderColor: '#000', 
-        alignItems: 'center', 
-        justifyContent: 'center' 
-    },
-    radioButtonSelected: { 
-        backgroundColor: '#FFD700', 
-        borderColor: '#FFD700' 
-    },
-    radioInner: { 
-        width: 12, 
-        height: 12, 
-        borderRadius: 6, 
-        backgroundColor: '#000' 
-    },
     calculateButton: {
         backgroundColor: '#FFD700',
-        paddingVertical: 15,
+        paddingVertical: height * 0.02,
         borderRadius: 8,
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: height * 0.015,
     },
     calculateButtonText: {
         color: '#000',
         fontWeight: 'bold',
-        fontSize: 20,
+        fontSize: width * 0.05,
     },
-    result: {
-        fontSize: 20,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        backgroundColor: '#fff',
+        borderRadius: scaleSize(15),
+        width: '85%',
+        paddingVertical: scaleSize(20),
+        paddingHorizontal: scaleSize(25),
+        alignItems: 'center',
+        elevation: 10,
+    },
+    modalContent: {
+        width: '85%',
+        backgroundColor: '#fff',
+        padding: width * 0.06,
+        borderRadius: 15,
+        alignItems: 'center',
+        elevation: 10,
+    },
+    modalTitle: {
+        fontSize: width * 0.05,
         fontWeight: 'bold',
+        marginBottom: height * 0.015,
         color: '#000',
-        paddingVertical: 10,
-        textAlign: 'center',
+    },
+    resultContainer: {
+        marginTop: height * 0.03,
+        alignItems: 'center',
+    },
+    resultBox: {
+        backgroundColor: '#f7f7f7',
+        borderRadius: 10,
+        paddingVertical: height * 0.015,
+        paddingHorizontal: width * 0.05,
+        width: '100%',
+    },
+    resultRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: height * 0.01,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    resultLabel: {
+        fontSize: scaleFont(16),
+        color: '#444',
+        textAlign: 'center',  // Center the label
+        marginBottom: scaleSize(5),  // Add spacing below the label
+    },
+
+    resultValue: {
+        fontSize: scaleFont(17),
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',  // Center the value
+    },
+    payCategory: {
+        fontSize: 16,
+        textAlign: 'right', // Aligns text to the right
+        flex: 1, // Allows it to take available space
+        flexWrap: 'wrap', // Ensures it wraps if needed
+        fontWeight: 'bold',
+    },
+
+    closeButton: {
+        marginTop: height * 0.03,
+        backgroundColor: '#FFD700',
+        paddingVertical: height * 0.02,
+        paddingHorizontal: width * 0.08,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    closeButtonText: {
+        fontSize: width * 0.05,
+        fontWeight: 'bold',
+        color: '#222',
+    },
+    clearButton: {
+        backgroundColor: '#FF3B30',
+        paddingVertical: height * 0.02,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: height * 0.015,
+    },
+    clearButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: width * 0.045,
     },
 });
+
 
 export default OvertimePay;

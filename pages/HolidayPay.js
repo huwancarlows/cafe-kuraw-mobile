@@ -5,13 +5,16 @@ import {
     TextInput,
     StyleSheet,
     Dimensions,
-    TouchableOpacity,
+    TouchableOpacity, 
     ScrollView,
     Alert,
+    Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import NetInfo from "@react-native-community/netinfo";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchHolidays } from '../services/HolidayService';
 
 const HolidayPay = ({ navigation }) => {
@@ -24,44 +27,91 @@ const HolidayPay = ({ navigation }) => {
     const [workType, setWorkType] = useState('worked');
     const [totalHolidayPay, setTotalHolidayPay] = useState('');
     const [holidays, setHolidays] = useState([]);
+    const [isOffline, setIsOffline] = useState(false);;
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
-        loadHolidays();
+        checkConnection();
     }, []);
 
     useEffect(() => {
-        calculateHolidaysInPeriod();
-    }, [fromDate, toDate, holidays]);
+        if (!isOffline) {
+            loadHolidays();
+        } else {
+            loadCachedHolidays();
+        }
+    }, [isOffline]);
 
-    const loadHolidays = async () => {
-        const data = await fetchHolidays();
-        setHolidays(data);
+    useEffect(() => {
+        calculateHolidaysInPeriod();
+    }, [fromDate, toDate, holidays, isOffline]);
+
+    const checkConnection = async () => {
+        const state = await NetInfo.fetch();
+        setIsOffline(!state.isConnected);
     };
 
-    const calculateHolidaysInPeriod = () => {
-        const filteredHolidays = holidays.filter(holiday => {
+
+    const loadHolidays = async () => {
+        try {
+            const data = await fetchHolidays();
+            setHolidays(data);
+            await AsyncStorage.setItem('cachedHolidays', JSON.stringify(data));
+            calculateHolidaysInPeriod(data); // Ensure calculation happens after fetch ✅
+        } catch (error) {
+            console.log("Error fetching holidays:", error);
+        }
+    };
+
+    const loadCachedHolidays = async () => {
+        try {
+            const cachedData = await AsyncStorage.getItem('cachedHolidays');
+            if (cachedData) {
+                const parsedHolidays = JSON.parse(cachedData);
+                setHolidays(parsedHolidays);
+                setNumberHoliday(parsedHolidays.length.toString()); // ✅ Preload into input field
+            } else {
+                setHolidays([]);
+                setNumberHoliday("0"); // ✅ Default to 0 if no cached holidays
+            }
+        } catch (error) {
+            console.log("Error loading cached holidays:", error);
+        }
+    };
+
+    const calculateHolidaysInPeriod = (overrideHolidays = null) => {
+        const holidaysToUse = overrideHolidays || holidays;
+    
+        const filteredHolidays = holidaysToUse.filter(holiday => {
             const holidayDate = new Date(holiday.holiday_date);
             return holidayDate >= fromDate && holidayDate <= toDate;
         });
-        setNumberHoliday(filteredHolidays.length > 0 ? filteredHolidays.length.toString() : '0');
+    
+        setNumberHoliday(filteredHolidays.length.toString());
     };
-    
+
     const handleCalculate = () => {
-        if (!dailyRate) {
-            Alert.alert('Error', 'Please provide a valid daily rate.');
-            return;
-        }
-    
-        const rate = parseFloat(dailyRate);
-        const holidaysCount = parseInt(holiday, 10);
-    
-        if (holidaysCount === 0) {
-            Alert.alert('No Holidays', 'No holidays are found in this period.');
-            return;
-        }
-    
-        let totalPay = workType === 'worked' ? rate * holidaysCount * 2 : rate * holidaysCount;
-        setTotalHolidayPay(totalPay.toFixed(2));
+           if (!dailyRate) {
+               Alert.alert('Error', 'Please provide a valid daily rate.');
+               return;
+           }
+   
+           const rate = parseFloat(dailyRate);
+           const holidaysCount = parseInt(holiday, 10);
+   
+           if (holidaysCount === 0) {
+               Alert.alert('No Holidays', 'No holidays are found in this period.');
+               return;
+           }
+   
+           let totalPay = workType === 'worked' ? rate * holidaysCount * 2 : rate * holidaysCount;
+           setTotalHolidayPay(totalPay.toFixed(2));
+           setModalVisible(true);
+    };
+
+    const clearFields = () => {
+        setNumberHoliday('');
+        setActualDailyRate('');
     };
 
     return (
@@ -118,11 +168,14 @@ const HolidayPay = ({ navigation }) => {
                     )}
                     <Text style={styles.label}>No. of Holidays within the Period:</Text>
                     <TextInput
-                        style={styles.input}
-                        placeholder="0"
-                        value={holiday}
-                        editable={false} 
-                    />
+    style={styles.input}
+    placeholder="0"
+    value={holiday}
+    onChangeText={(text) => setNumberHoliday(text)}
+    keyboardType="numeric"
+    editable={isOffline} // ✅ Editable as long as user is offline
+/>
+
                     <Text style={styles.label}>Actual Daily Rate:</Text>
                     <TextInput
                         style={styles.input}
@@ -132,21 +185,73 @@ const HolidayPay = ({ navigation }) => {
                         keyboardType="numeric"
                     />
                     <View style={styles.radioContainer}>
+                        {/* Worked Radio Button */}
                         <TouchableOpacity onPress={() => setWorkType('worked')} style={styles.radioButtonContainer}>
                             <View style={[styles.radioButton, workType === 'worked' && styles.radioButtonSelected]} />
                             <Text style={styles.radioLabel}>Worked</Text>
                         </TouchableOpacity>
+
+                        {/* Unworked Radio Button */}
                         <TouchableOpacity onPress={() => setWorkType('unworked')} style={styles.radioButtonContainer}>
                             <View style={[styles.radioButton, workType === 'unworked' && styles.radioButtonSelected]} />
                             <Text style={styles.radioLabel}>Unworked</Text>
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.label}>Total Holiday Pay:</Text>
-                    <Text style={styles.result}>{`PHP ${totalHolidayPay}`}</Text>
+
                     <TouchableOpacity style={styles.calculateButton} onPress={handleCalculate}>
                         <Text style={styles.calculateButtonText}>CALCULATE</Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.clearButton} onPress={clearFields}>
+                        <Text style={styles.clearButtonText}>CLEAR</Text>
+                    </TouchableOpacity>
+
                 </View>
+ 
+                <Modal visible={modalVisible} transparent animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Calculation Results</Text>
+
+                            <View style={styles.resultContainer}>
+                                 <View style={styles.resultRow}>
+                                    <Text style={styles.resultLabel}>Period:</Text>
+                                        <Text style={styles.resultValue}>
+                                        {fromDate ? fromDate.toLocaleDateString() : "N/A"} - {toDate ? toDate.toLocaleDateString() : "N/A"}
+                                    </Text>
+                                 </View>
+                                
+
+                                <View style={styles.resultRow}>
+                                    <Text style={styles.resultLabel}>No. of Holidays:</Text>
+                                    <Text style={styles.resultValue}>{holiday} day/s</Text>
+                                </View>
+
+
+                                <View style={styles.resultRow}>
+                                    <Text style={styles.resultLabel}>Actual Daily Rate:</Text>
+                                    <Text style={styles.resultValue}>₱ {dailyRate} </Text>
+                                </View>
+
+                                <View style={styles.resultRow}>
+                                    <Text style={styles.resultLabel}>Work Type:</Text>
+                                    <Text style={styles.resultValue}>
+                                        {workType === 'worked' ? 'Worked' : 'Unworked'}
+                                    </Text>
+                                </View>
+                            
+                                <View style={styles.resultRow}>
+                                     <Text style={styles.resultLabel}>Total Holiday Pay:</Text>
+                                     <Text style={styles.resultValue}>₱{totalHolidayPay}</Text>
+                                </View>
+
+                                <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                                    <Text style={styles.closeButtonText}>CLOSE</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             </ScrollView>
         </View>
     );
@@ -180,6 +285,7 @@ const styles = StyleSheet.create({
         flex: 1, // Takes up available space to center properly
     },
     
+    
     content: {
         flexGrow: 1,
         alignItems: 'center',
@@ -188,51 +294,82 @@ const styles = StyleSheet.create({
     formContainer: {
         top: '2%',
         width: '90%',
-        height: '95%',
+        height: '80%',
         backgroundColor: '#fff',
         borderRadius: 20,
         padding: 20,
         elevation: 5,
     },
-  
-    input: {
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        marginBottom: 15,
+    label: {
         fontSize: 16,
+        fontWeight: 'bold',
         color: '#000',
-    },
-
-    labelContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 5,
     },
-
-    label: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 8,
-        color: '#000',
-    },
-   
     input: {
+        backgroundColor: '#fff',
         borderColor: '#000',
         borderWidth: 1,
         borderRadius: 8,
         paddingVertical: 10,
         paddingHorizontal: 15,
-        marginTop:10,
         marginBottom: 15,
         fontSize: 16,
         color: '#000',
-        backgroundColor: '#fff',
     },
-
+    dropdownContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderColor: '#000',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        marginBottom: 15,
+    },
+    dropdownText: {
+        fontSize: 16,
+        color: '#000',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContainer: {
+        position: 'absolute',
+        top: '30%',
+        left: '10%',
+        right: '10%',
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 10,
+        elevation: 5,
+        maxHeight: '40%',
+    },
+    modalItem: {
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    modalItemText: {
+        fontSize: 16,
+        color: '#000',
+    },
+    calculateButton: {
+        backgroundColor: '#FFD700',
+        paddingVertical: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 30,
+    },
+    calculateButtonText: {
+        color: '#000',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
     dateInputContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -249,15 +386,14 @@ const styles = StyleSheet.create({
         width: '45%',
         alignItems: 'center',
     },
-    dateText: {
-        fontSize: 16,
-    },
+
     toText: {
         fontSize: 16,
-        fontWeight: "bold",
-        marginHorizontal: 10,
+        fontWeight: 'bold',
+        color: '#000',
+        marginHorizontal: 10, // Add spacing around "to"
     },
-   
+
     radioContainer: {
         flexDirection: 'row',
         marginBottom: 15,
@@ -294,26 +430,91 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginHorizontal: 5,
     },
-
-    result: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginVertical: 16,
-        color: '#000',
-    },
-    calculateButton: {
-        backgroundColor: '#FFD700', // Bright yellow color
-        paddingVertical: 15,
-        borderRadius: 10,
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
     },
-    calculateButtonText: {
-        color: '#000',
+    modalContent: {
+        width: '85%',
+        backgroundColor: '#fff', // White background
+        padding: 25,
+        borderRadius: 15,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 8,
+    },
+    modalTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        color: 'black',
+    },
+    resultContainer: {
+        width: '100%',
+        backgroundColor: '#f8f8f8', // Light gray for contrast
+        borderRadius: 12,
+        padding: 15,
+    },
+    resultRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    remarksRow: {
+        borderBottomWidth: 0, // No border for last row
+        justifyContent: 'flex-start',
+    },
+    resultLabel: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#444',
+    },
+    resultValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+
+    clearButton: {
+        backgroundColor: '#FF3B30',
+        paddingVertical: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    clearButtonText: {
+        color: '#fff',
         fontWeight: 'bold',
         fontSize: 18,
     },
+
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: '#FFD700',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    closeButtonText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#222',
+        marginLeft:90,
+    },
+    
 });
 
-export default HolidayPay;  
+export default HolidayPay;

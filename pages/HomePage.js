@@ -21,20 +21,10 @@ const computationOptions = [
     { label: 'Holiday Pay', value: 'holiday_pay' },
     { label: 'Premium Pay', value: 'premium_pay' },
     { label: 'Night Shift Differential', value: 'nightshift' },
-    { label: 'Service Charges', value: 'service_charges' },
     { label: 'Service Incentive Leave', value: 'service_incentive' },
-    { label: 'Maternity Leave', value: 'maternity_leave' },
-    { label: 'Paternity Leave', value: 'paternity_leave' },
-    { label: 'Parental Leave', value: 'parental_leave' },
-    { label: 'Leave for VAWC', value: 'vawc' },
-    { label: 'Special Leave for Women', value: 'special_leave_women' },
-    { label: '13th Month Pay', value: '13th_month' },
+    { label: '13th Month Pay', value: 'thirteenth_month_pay' },
     { label: 'Separation Pay', value: 'separation_pay' },
     { label: 'Retirement Pay', value: 'retirement_pay' },
-    { label: 'ECC Benefits', value: 'ecc_benefits' },
-    { label: 'PhilHealth Benefits', value: 'philhealth' },
-    { label: 'SSS Benefits', value: 'sss' },
-    { label: 'Pag-IBIG Benefits', value: 'pagibig' },
 ];
 
 const HomePage = ({ navigation }) => {
@@ -99,6 +89,16 @@ const HomePage = ({ navigation }) => {
             navigation.navigate('OvertimePay');
         } else if (selectedComputation === 'holiday_pay') {
             navigation.navigate('HolidayPay');
+        } else if (selectedComputation === 'thirteenth_month_pay') {  
+            navigation.navigate('ThirteenthMonthPay'); 
+        } else if (selectedComputation === 'premium_pay') {
+            navigation.navigate('PremiumPay');
+        } else if (selectedComputation === 'nightshift') {
+            navigation.navigate('NightShiftDiff');
+        } else if (selectedComputation === 'service_incentive') {
+            navigation.navigate('SIL');
+        } else if (selectedComputation === 'separation_pay') {
+            navigation.navigate('SeparationPay');
         } else {
             Alert.alert('Navigation not set for this computation type.');
         }
