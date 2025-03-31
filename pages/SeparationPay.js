@@ -4,6 +4,8 @@ import {
     Text,
     TextInput,
     StyleSheet,
+    Dimensions,
+    PixelRatio,
     TouchableOpacity,
     ScrollView,
     Modal,
@@ -12,19 +14,24 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 
 const SeparationPay = () => {
     const navigation = useNavigation();
 
-    const [dateHired, setDateHired] = useState('');
-    const [dateTerminated, setDateTerminated] = useState('');
+    const [dateHired, setDateHired] = useState(null); 
+    const [dateTerminated, setDateTerminated] = useState(null); 
     const [dailyRate, setDailyRate] = useState('');
-    const [terminationReason, setTerminationReason] = useState('');
+    const [Reason, setReason] = useState('');
     const [separationPay, setSeparationPay] = useState(0);
+    const [showDateHiredPicker, setShowDateHiredPicker] = useState(false);
+    const [showDateTerminatedPicker, setShowDateTerminatedPicker] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    
 
     const handleCalculate = () => {
-        if (!dailyRate || !terminationReason || !dateHired || !dateTerminated) {
+        if (!dailyRate || !Reason || !dateHired || !dateTerminated) {
             Alert.alert("Invalid Input", "Please enter all required fields.");
             return;
         }
@@ -49,10 +56,10 @@ const SeparationPay = () => {
         let computedPay = 0;
         let comment = "";
 
-        if (["Retirement", "Closure", "Sickness not curable"].includes(terminationReason)) {
+        if (["Retirement", "Closure", "Sickness not curable"].includes(Reason)) {
             computedPay = yearsWorked * parsedDailyRate * 26 * 0.5;
             comment = "Half Month Pay";
-        } else if (["Installation", "Redundancy", "Position not feasible", "Sickness not curable"].includes(terminationReason)) {
+        } else if (["Installation", "Redundancy", "Position not feasible", "Sickness not curable"].includes(Reason)) {
             computedPay = yearsWorked * parsedDailyRate * 26;
             comment = "Full Month Pay";
         }
@@ -64,7 +71,7 @@ const SeparationPay = () => {
         setDateHired('');
         setDailyRate('');
         setDateTerminated('');
-        setTerminationReason('null');
+        setReason('null');
 
     };
 
@@ -83,16 +90,42 @@ const SeparationPay = () => {
             </View>
             
             <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.formContainer}>
-                    <Text style={styles.label}>Date Hired:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={dateHired}
-                        onChangeText={setDateHired}
-                        placeholder="YYYY-MM-DD"
-                        keyboardType="default"
-                    />
-                    
+            <View style={styles.formContainer}>
+            {/* Date Hired */}
+            <Text style={styles.label}>Date Hired:</Text>
+            <TouchableOpacity style={styles.dateInput} onPress={() => setShowDateHiredPicker(true)}>
+                <Text>{dateHired ? dateHired.toDateString() : "Select Date"}</Text>
+            </TouchableOpacity>
+            {showDateHiredPicker && (
+                <DateTimePicker
+                    value={dateHired || new Date()} // Ensure it's always a valid date
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                        setShowDateHiredPicker(false);
+                        if (selectedDate) setDateHired(selectedDate);
+                    }}
+                />
+            )}
+
+            {/* Date of Termination */}
+            <Text style={styles.label}>Date of Termination:</Text>
+            <TouchableOpacity style={styles.dateInput} onPress={() => setShowDateTerminatedPicker(true)}>
+                <Text>{dateTerminated ? dateTerminated.toDateString() : "Select Date"}</Text>
+            </TouchableOpacity>
+            {showDateTerminatedPicker && (
+                <DateTimePicker
+                    value={dateTerminated || new Date()} // Ensure it's always a valid date
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                        setShowDateTerminatedPicker(false);
+                        if (selectedDate) setDateTerminated(selectedDate);
+                    }}
+                />
+            )}
+
+
                     <Text style={styles.label}>Daily Rate:</Text>
                     <TextInput
                         style={styles.input}
@@ -102,7 +135,7 @@ const SeparationPay = () => {
                         placeholder="Enter daily rate"
                     />
                     
-                    <Text style={styles.label}>Reason for Termination:</Text>
+                    <Text style={styles.label}>Reason:</Text>
                     {["Retirement", 
                     "Closure", 
                     "Sickness not curable", 
@@ -114,24 +147,15 @@ const SeparationPay = () => {
                         <TouchableOpacity
                             key={index}
                             style={styles.radioButtonContainer}
-                            onPress={() => setTerminationReason(reason)}
+                            onPress={() => setReason(reason)}
                         >
                             <View style={styles.radioButton}>
-                                {terminationReason === reason && <View style={styles.radioButtonSelected} />}
+                                {Reason === reason && <View style={styles.radioButtonSelected} />}
                             </View>
                             <Text style={styles.radioLabel}>{reason}</Text>
                         </TouchableOpacity>
                     ))}
-                    
-                    <Text style={styles.label}>Date of Termination:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={dateTerminated}
-                        onChangeText={setDateTerminated}
-                        placeholder="YYYY-MM-DD"
-                        keyboardType="default"
-                    />
-                    
+
                     <TouchableOpacity style={styles.calculateButton} onPress={handleCalculate}>
                         <Text style={styles.calculateButtonText}>CALCULATE</Text>
                     </TouchableOpacity>
@@ -149,10 +173,11 @@ const SeparationPay = () => {
                         <Text style={styles.modalTitle}>Calculation Results</Text>
 
                         <View style={styles.resultContainer}>
-                            <View style={styles.resultRow}>
-                                <Text style={styles.resultLabel}>Date Hired:</Text>
-                                <Text style={styles.resultValue}>{dateHired}</Text>
-                            </View>
+
+                            <Text style={styles.resultLabel}>Date Hired:</Text>
+                            <Text style={styles.resultValue}>{dateHired ? dateHired.toDateString() : 'N/A'}</Text>
+                            <Text style={styles.resultLabel}>Date of Termination:</Text>
+                            <Text style={styles.resultValue}>{dateTerminated ? dateTerminated.toDateString() : 'N/A'}</Text>
 
                             <View style={styles.resultRow}>
                                 <Text style={styles.resultLabel}>Daily Rate:</Text>
@@ -160,13 +185,8 @@ const SeparationPay = () => {
                             </View>
 
                             <View style={styles.resultRow}>
-                                <Text style={styles.resultLabel}>Reason for Termination:</Text>
-                                <Text style={styles.resultValue}>{terminationReason}</Text>
-                            </View>
-
-                            <View style={styles.resultRow}>
-                                <Text style={styles.resultLabel}>Date of Termination:</Text>
-                                <Text style={styles.resultValue}>{dateTerminated}</Text>
+                                <Text style={styles.resultLabel}>Reason:</Text>
+                                <Text style={styles.resultValue}>{Reason}</Text>
                             </View>
 
                             <View style={styles.resultRow}>
@@ -174,11 +194,12 @@ const SeparationPay = () => {
                                 <Text style={styles.resultValue}>₱{separationPay.toFixed(2)}</Text>
                             </View>
                             <Text style={styles.resultNote}>
-                                {terminationReason === "Retirement" || terminationReason === "Closure" || terminationReason === "Sickness not curable" 
-                                    ? "(Half Month Pay)" 
-                                    : terminationReason === "Installation" || terminationReason === "Redundancy" || terminationReason === "Position not feasible" 
-                                    ? "(Full Month Pay)" 
-                                    : ""}
+                            Note:{" "}
+                            {Reason === "Retirement" || Reason === "Closure" || Reason === "Sickness not curable"
+                                ? "Half Month Pay"
+                                : Reason === "Installation" || Reason === "Redundancy" || Reason === "Position not feasible"
+                                ? "Full Month Pay"
+                                : "N/A"}
                             </Text>
                         </View>
 
@@ -192,27 +213,50 @@ const SeparationPay = () => {
     );
 };
 
+// Get device screen width and height
+const { width, height } = Dimensions.get('window');
+
+const scaleFont = (size) => size * PixelRatio.getFontScale();
+const scaleSize = (size) => (size / 375) * width; // 375 is a common baseline width
+
 const styles = StyleSheet.create({
-    container: { 
-        flex: 1, 
-        backgroundColor: '#000' 
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
     },
-    header: { 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        paddingTop: 60, 
-        paddingHorizontal: 20, 
-        paddingBottom: 20 
+    background: {
+        ...StyleSheet.absoluteFillObject,
     },
-    backIcon: { 
-        marginRight: 10 
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: height * 0.08,  // Adjusts for notch screens
+        paddingHorizontal: width * 0.05,
+        paddingBottom: height * 0.02,
     },
-    headerTitle: { 
-        fontSize: 32, 
-        fontWeight: 'bold', 
-        color: '#fff', 
-        textAlign: 'center', 
-        flex: 1 
+    backIcon: {
+        marginRight: width * 0.03, 
+    },
+    headerTitle: {
+        fontSize: scaleFont(28),
+        fontWeight: 'bold',
+        color: '#fff',
+        marginLeft: width * 0.14,
+        flex: 1,
+    },
+    content: {
+        flexGrow: 1,
+        alignItems: 'center',
+        paddingBottom: height * 0.05,
+    },
+    formContainer: {
+        top: '2%',
+        width: '90%',
+        height: '95%',
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: width * 0.05,
+        elevation: 5,
     },
     formContainer: { 
         width: '90%', 
@@ -239,6 +283,14 @@ const styles = StyleSheet.create({
         fontSize: 16, 
         color: '#000'
      },
+     dateInput: { 
+        borderColor: '#000', 
+        borderWidth: 1, 
+        borderRadius: 8, 
+        padding: 10, 
+        marginBottom: 15, 
+        alignItems: 'center' 
+    },
     calculateButton: { 
         backgroundColor: '#FFD700', 
         paddingVertical: 15, 
@@ -269,34 +321,54 @@ const styles = StyleSheet.create({
         fontWeight: 'bold', 
         marginBottom: 15 
     },
-    resultContainer: {
+    resultBox: {
+        backgroundColor: '#f7f7f7',
+        borderRadius: scaleSize(10),
+        paddingVertical: scaleSize(15),
+        paddingHorizontal: scaleSize(20),
         width: '100%',
-        backgroundColor: '#f8f8f8', // Light gray for contrast
-        borderRadius: 12,
-        padding: 15,
+        marginBottom: scaleSize(15),
+        alignItems: 'center',  // Centering content
     },
     resultRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 10,
+        paddingVertical: height * 0.012,
         borderBottomWidth: 1,
         borderBottomColor: '#ddd',
     },
     remarksRow: {
-        borderBottomWidth: 0, // No border for last row
+        borderBottomWidth: 0,
         justifyContent: 'flex-start',
     },
     resultLabel: {
-        fontSize: 16,
-        fontWeight: '500',
+        fontSize: scaleFont(16),
         color: '#444',
+        textAlign: 'center',  // Center the label
+        marginBottom: scaleSize(5),  // Add spacing below the label
     },
     resultValue: {
-        fontSize: 18,
+        fontSize: scaleFont(17),
         fontWeight: 'bold',
         color: '#333',
+        textAlign: 'center',  // Center the value
     },
+    resultFinal: {
+        fontSize: scaleFont(19),
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',  // Center the value
+    },
+    resultNote: {
+        fontSize: scaleFont(16),
+        color: '#555',  
+        fontWeight: '500',
+        textAlign: 'center',
+        marginTop: scaleSize(10), 
+        paddingHorizontal: scaleSize(15), 
+    },
+   
     clearButton: {
         backgroundColor: '#FF3B30',
         paddingVertical: 15,
@@ -309,15 +381,22 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
     },
-    closeButton: { 
-        marginTop: 20, 
-        padding: 10, 
-        backgroundColor: 'red', 
-        borderRadius: 5 
+    closeButton: {
+        marginTop: height * 0.02,
+        backgroundColor: '#FFD700',
+        paddingVertical: height * 0.018,
+        paddingHorizontal: width * 0.08,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
     },
-    closeButtonText: { 
-        color: '#fff', 
-        fontWeight: 'bold'
+    closeButtonText: {
+        fontSize: scaleFont(18),
+        fontWeight: 'bold',
+        color: '#222',
     },
     
     radioButtonContainer: {
@@ -347,4 +426,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SeparationPay;
+export default SeparationPay;   

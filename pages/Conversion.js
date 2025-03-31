@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet,Dimensions,
+    PixelRatio } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+
+const { height, width } = Dimensions.get('window');
+
+const FloatingButton = ({ onPress }) => {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.button} onPress={onPress}>
+          <Ionicons name="add" size={32} color="white" />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 const Conversion = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [monthlySalary, setMonthlySalary] = useState('');
@@ -28,9 +41,9 @@ const Conversion = () => {
 
         if (restDayWork) {
             if (holidayWork) {
-                daily = (monthly * 12) / 365;
+                daily = (monthly * 12) / 355;
             } else {
-                daily = monthly / 365;
+                daily =(monthly * 12) / 365;
             }
         } else {
             if (restDays === 1) {
@@ -38,14 +51,22 @@ const Conversion = () => {
             } else if (restDays === 2) {
                 daily = (monthly * 12) / 261;
             } else {
-                daily = monthly / 26; // Default working days if no specific rest days
+                daily = monthly / 26; 
             }
         }
 
         setDailySalary(Math.round(daily));
     };
-
-
+   
+    const clearFields = () => {
+        setMonthlySalary('');
+        setDailySalary('');
+        setDailySalary('');
+        setRestDayWork(false);  
+        setHolidayWork(false);
+        setRestDaysPerMonth('');
+    }
+    
     return (
         <View style={styles.container}>
             <TouchableOpacity
@@ -63,6 +84,10 @@ const Conversion = () => {
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
+                        {/* Close Button (X) */}
+                    <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                        <Icon name="close" size={24} color="#333" />
+                    </TouchableOpacity>
                         <Text style={styles.title}>Salary Conversion</Text>
 
                         <TextInput
@@ -138,16 +163,13 @@ const Conversion = () => {
                             <Text style={styles.buttonText}>Calculate</Text>
                         </TouchableOpacity>
 
+                        <TouchableOpacity style={styles.clearButton} onPress={clearFields}>
+                                                <Text style={styles.clearButtonText}>CLEAR</Text>
+                        </TouchableOpacity>
+
                         {dailySalary !== '' && (
                             <Text style={styles.result}>Daily Salary: ₱{dailySalary}</Text>
                         )}
-
-                        <TouchableOpacity
-                            style={styles.closeButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Text style={styles.closeButtonText}>Close</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
@@ -155,95 +177,157 @@ const Conversion = () => {
     );
 };
 
+const scaleFont = (size) => size * PixelRatio.getFontScale();
+const scaleSize = (size) => (size / 375) * width; // 375 is a common baseline width
+
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: 'transparent',
         position: 'absolute',
-        width: '100%',
-        height: '100%',
-    },
-    assistiveTouch: {
-        position: 'absolute',
-        bottom: 30,
-        right: 30,
-        borderRadius: 30,
-        backgroundColor: '#4CAF50',
-        justifyContent: 'center',
+        top: 65,
+        right: 20,
         alignItems: 'center',
-        elevation: 10,
-    },
+        justifyContent: 'center',
+      },
+      button: {
+        width: 60,
+        height: 60,
+        borderRadius: 30, 
+        backgroundColor: '#FFD700', 
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 6,
+        elevation: 8, 
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.6)',
+      },
+      
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
     },
     modalContent: {
-        width: '90%',
+        width: '85%',
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: 20,
+        padding: 18,
         borderRadius: 10,
-        elevation: 10,
+        elevation: 8,
     },
     title: {
-        fontSize: 24,
+        fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 20,
-        color: '#000',
+        marginBottom: 15,
+        color: '#333',
+        textAlign: 'center', 
     },
     input: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        marginBottom: 15,
-        paddingVertical: 8,
-        color: '#000',
+        borderWidth: 1,
+        borderColor: '#D1D1D1', 
+        borderRadius: 8, 
+        paddingVertical: 10, 
+        paddingHorizontal: 12, 
+        marginBottom: 12, 
+        color: '#333', 
+        backgroundColor: '#F9F9F9', 
+        fontSize: 16, 
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 }, 
+        shadowOpacity: 0.1, 
+        shadowRadius: 4,
     },
+     
     radioGroupContainer: {
-        marginBottom: 15,
+        marginBottom: 12,
     },
+
     radioLabel: {
         fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 5,
+        fontWeight: 'bold',
+        marginBottom: 8,
+        color: '#222',
+        paddingLeft: 12, 
     },
+    
     radioContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
+        paddingVertical: 6, 
     },
+    
     radioOption: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginRight: 20,
+        marginRight: 20, 
+        paddingVertical: 8, 
+        paddingHorizontal: 12, 
+        borderRadius: 6, 
     },
+    
     radioText: {
-        marginLeft: 5,
-        fontSize: 14,
+        marginLeft: 8, 
+        fontSize: 15, 
+        color: '#444', 
+        fontWeight: '500', 
     },
+    
     calculateButton: {
-        backgroundColor: '#4CAF50',
-        padding: 12,
-        borderRadius: 8,
+        backgroundColor: '#FFD700',
+        paddingVertical: height * 0.015, 
+        borderRadius: scaleSize(8),
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: height * 0.005,
     },
-    buttonText: {
-        color: 'white',
-        fontSize: 18,
+    calculateButtonText: {
+        color: '#000',
         fontWeight: 'bold',
+        fontSize: 20,
     },
     result: {
-        marginTop: 20,
-        fontSize: 20,
+        marginTop: 15,
+        fontSize: 22,
+        color: '#333',
+        textAlign: 'center',
         fontWeight: 'bold',
-        color: '#000',
+        backgroundColor: '#FFD700',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        alignSelf: 'center',
+        minWidth: '60%',
     },
-    closeButtonText: {
-        color: '#FF6347',
-        fontSize: 18,
+    
+  
+    clearButton: {
+        backgroundColor: '#FF3B30',
+        paddingVertical: height * 0.015, // Reduced from 0.02
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: height * 0.005,
+        width: '100%',
+    },
+    clearButtonText: {
+        color: '#fff',
         fontWeight: 'bold',
+        fontSize: scaleFont(18),
     },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        padding: 8,
+        zIndex: 10,
+    },
+    
 });
-
 export default Conversion;
