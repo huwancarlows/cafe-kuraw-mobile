@@ -54,8 +54,8 @@ const RetirementPay = () => {
 
     const calculateRetirementPay = () => {
         const numericAge = parseInt(age);
-        const rate = parseFloat(dailyRate);
-
+        const rate = Math.round(parseFloat(dailyRate)); // Ensure whole number
+    
         if (isNaN(numericAge) || numericAge <= 0) {
             Alert.alert("Invalid Input", "Please enter a valid Age.");
             return;
@@ -66,50 +66,70 @@ const RetirementPay = () => {
         }
         if (numericAge < 60) {
             Alert.alert("No Retirement Pay", "The employee is not eligible for retirement pay.");
-            setRetirementPay("₱0.00");
+            setRetirementPay("₱0");
             return;
         }
-
+    
+        let yearsWorked = 0;
         let calculatedDateHired;
         let formattedDateHired;
-        let yearsWorked;
-
+    
         if (useManualYears) {
             yearsWorked = parseInt(manualYears);
             if (isNaN(yearsWorked) || yearsWorked <= 0) {
                 Alert.alert("Invalid Input", "Please enter a valid number of years worked.");
                 return;
             }
-
+    
+            // Check if years worked is less than 5
+            if (yearsWorked < 5) {
+                Alert.alert("Not Eligible for Retirement Pay", "Employee hasn't worked 5 years, so no retirement pay.");
+                setRetirementPay("₱0");
+                return;
+            }
+    
+            // Calculate Date Hired based on the number of years worked manually
             calculatedDateHired = new Date(dateRetirement);
             calculatedDateHired.setFullYear(calculatedDateHired.getFullYear() - yearsWorked);
-
             formattedDateHired = `${yearsWorked} Years`;
         } else {
+            // Check if Date Hired is less than 5 years ago
+            const currentYear = new Date().getFullYear();
+            const hiredYear = dateHired.getFullYear();
+            const yearsSinceHired = currentYear - hiredYear;
+    
+            if (yearsSinceHired < 5) {
+                Alert.alert("Not Eligible for Retirement Pay", "Employee hasn't worked 5 years, so no retirement pay.");
+                setRetirementPay("₱0");
+                return;
+            }
+    
             calculatedDateHired = dateHired;
             const daysWorked = differenceInDays(dateRetirement, calculatedDateHired);
             formattedDateHired = calculatedDateHired.toDateString();
-
-            // New formula for retirement pay
-            const calculatedPay = (daysWorked * (1 / 365) * 1000 * 22.5);
-            setRetirementPay(`₱${calculatedPay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+    
+            // New formula for retirement pay (rounded to a whole number)
+            const calculatedPay = Math.round(daysWorked * (1 / 365) * 1000 * 22.5);
+            setRetirementPay(`₱${calculatedPay.toLocaleString()}`);
             setModalVisible(true);
             setFinalDateHired(formattedDateHired);
             return;
         }
-
+    
         setFinalDateHired(formattedDateHired);
-
+    
         if (dateRetirement <= calculatedDateHired) {
             Alert.alert("Invalid Dates", "Date of Retirement must be after Date Hired.");
             return;
         }
-
-        const calculatedPay = rate * 22.5 * yearsWorked;
-
-        setRetirementPay(`₱${calculatedPay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+    
+        // Ensure whole number calculation for retirement pay
+        const calculatedPay = Math.round(rate * 22.5 * yearsWorked);
+        setRetirementPay(`₱${calculatedPay.toLocaleString()}`);
         setModalVisible(true);
     };
+    
+    
 
     const clearFields = () => {
         setDateHired(new Date());
@@ -119,7 +139,6 @@ const RetirementPay = () => {
         setDateRetirement(new Date());
         setAge('');
         setRetirementPay('');
-        setModalVisible(false);
         setShowDateHiredPicker(false);
         setShowDateRetirementPicker(false);
         setActiveButton(null);
@@ -147,7 +166,7 @@ const RetirementPay = () => {
                         }}
                     >
                         <Text style={[styles.toggleButtonText, activeButton === "picker" && { fontWeight: "bold" }]}>
-                            Use Date Picker
+                            Calendar
                         </Text>
                     </TouchableOpacity>
 
@@ -267,8 +286,8 @@ const RetirementPay = () => {
                                 <Text style={styles.resultDOR}>{dateRetirement.toDateString()}</Text>
                             </View>
 
-                            <View style={styles.resultRow}>
-                                <Text style={styles.resultValue}>Retirement Pay:</Text>
+                                <Text style={styles.resultLabel}></Text>
+                                <Text style={styles.resultLabel}>Retirement Pay:</Text>
                                 <Text style={styles.resultFinal}>{retirementPay}</Text>
                             </View>
 
@@ -277,7 +296,6 @@ const RetirementPay = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </View>
             </Modal>
         </View>
     );

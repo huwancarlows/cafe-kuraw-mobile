@@ -5,6 +5,7 @@ import {
     TextInput,
     StyleSheet,
     Dimensions,
+    PixelRatio,
     TouchableOpacity, 
     ScrollView,
     Alert,
@@ -16,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchHolidays } from '../services/HolidayService';
+
+const { width } = Dimensions.get('window');
 
 const HolidayPay = ({ navigation }) => {
     const [dailyRate, setActualDailyRate] = useState('');
@@ -116,24 +119,13 @@ const HolidayPay = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#2a2a2a', '#000']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.background}
-            />
-            <View style={styles.header}>
-                <Ionicons 
-                    name="arrow-back-outline" 
-                    size={32} 
-                    color="white" 
-                    style={styles.backIcon} 
-                    onPress={() => navigation.navigate('Home')} 
-                />
-                <Text style={styles.headerTitle}>HOLIDAY PAY</Text>
-            </View>
-            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                <View style={styles.formContainer}>
+                   <LinearGradient colors={['#2a2a2a', '#000']} style={styles.background} />
+                   <View style={styles.header}>
+                       <Ionicons name="arrow-back-outline" size={32} color="white" onPress={() => navigation.goBack()} />
+                       <Text style={styles.headerTitle}>HOLIDAY PAY</Text>
+                   </View>
+          <ScrollView contentContainerStyle={styles.content}>
+                          <View style={styles.formContainer}>
                     <Text style={styles.label}>Period:</Text>
                     <View style={styles.dateInputContainer}>
                         <TouchableOpacity style={styles.dateInput} onPress={() => setShowFromDatePicker(true)}>
@@ -207,7 +199,8 @@ const HolidayPay = ({ navigation }) => {
                     </TouchableOpacity>
 
                 </View>
- 
+                </ScrollView>
+
                 <Modal visible={modalVisible} transparent animationType="slide">
                     <View style={styles.modalContainer}>
                         <View style={styles.modalContent}>
@@ -224,13 +217,13 @@ const HolidayPay = ({ navigation }) => {
 
                                 <View style={styles.resultRow}>
                                     <Text style={styles.resultLabel}>No. of Holidays:</Text>
-                                    <Text style={styles.resultValue}>{holiday} day/s</Text>
+                                    <Text style={styles.resultValue}>{holiday} day</Text>
                                 </View>
 
 
                                 <View style={styles.resultRow}>
                                     <Text style={styles.resultLabel}>Actual Daily Rate:</Text>
-                                    <Text style={styles.resultValue}>₱ {dailyRate} </Text>
+                                       <Text style={styles.resultValue}>₱{Number(dailyRate).toLocaleString()}</Text>
                                 </View>
 
                                 <View style={styles.resultRow}>
@@ -239,10 +232,9 @@ const HolidayPay = ({ navigation }) => {
                                         {workType === 'worked' ? 'Worked' : 'Unworked'}
                                     </Text>
                                 </View>
-                            
-                                <View style={styles.resultRow}>
-                                     <Text style={styles.resultLabel}>Total Holiday Pay:</Text>
-                                     <Text style={styles.resultValue}>₱{totalHolidayPay}</Text>
+                                 <Text style={styles.resultLabel}></Text>
+                                     <Text style={styles.resultLabel}>Holiday Pay:</Text>
+                                     <Text style={styles.resultFinal}>₱{Number(totalHolidayPay).toLocaleString()}</Text>
                                 </View>
 
                                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
@@ -250,126 +242,111 @@ const HolidayPay = ({ navigation }) => {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </View>
                 </Modal>
-            </ScrollView>
         </View>
     );
 };
 
-const { height, width } = Dimensions.get('window');
+const scaleFont = (size) => size * PixelRatio.getFontScale();
+const scaleSize = (size) => (size / 375) * width; // 375 is a common baseline width
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
-    background: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    header: {
-        flexDirection: 'row',  // Arrange items in a row
-        alignItems: 'center',  // Align vertically in the center
-        paddingTop: 60,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-    backIcon: {
-        marginRight: 10, // Adds spacing between icon and title
-    },
-    headerTitle: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#fff',
-        textAlign: 'center',
-        flex: 1, // Takes up available space to center properly
-    },
-    
-    
-    content: {
-        flexGrow: 1,
-        alignItems: 'center',
-        paddingBottom: 50,
-    },
-    formContainer: {
-        top: '2%',
-        width: '90%',
-        height: '80%',
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        padding: 20,
-        elevation: 5,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: 5,
-    },
-    input: {
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-        fontSize: 16,
-        color: '#000',
-    },
-    dropdownContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        marginBottom: 15,
-    },
-    dropdownText: {
-        fontSize: 16,
-        color: '#000',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContainer: {
-        position: 'absolute',
-        top: '30%',
-        left: '10%',
-        right: '10%',
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        padding: 10,
-        elevation: 5,
-        maxHeight: '40%',
-    },
-    modalItem: {
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    modalItemText: {
-        fontSize: 16,
-        color: '#000',
-    },
-    calculateButton: {
-        backgroundColor: '#FFD700',
-        paddingVertical: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: 30,
-    },
-    calculateButtonText: {
-        color: '#000',
-        fontWeight: 'bold',
-        fontSize: 18,
-    },
+      container: { 
+            flex: 1, 
+            backgroundColor: '#000' 
+        },
+        background: { 
+            ...StyleSheet.absoluteFillObject 
+        },
+        header: { 
+            flexDirection: 'row', 
+            alignItems: 'center', 
+            paddingTop: 60, 
+            paddingHorizontal: 20, 
+            paddingBottom: 20 
+        },
+        headerTitle: { 
+            fontSize: 32, 
+            fontWeight: 'bold', 
+            color: '#fff', 
+            marginLeft: 90,
+            flex: 1,
+        },
+        content: { 
+            flexGrow: 1, 
+            alignItems: 'center', 
+            paddingBottom: 50 
+        },
+        formContainer: { 
+            width: '90%', 
+            backgroundColor: '#fff', 
+            borderRadius: 20, 
+            padding: 20, 
+            elevation: 5 
+        },
+        label: { 
+            fontSize: 16, 
+            fontWeight: 'bold', 
+            marginBottom: 5 
+        },
+        input: { 
+            borderColor: '#000', 
+            borderWidth: 1, 
+            borderRadius: 8, 
+            padding: 10, 
+            marginBottom: 15, 
+            fontSize: 16 
+        },
+        calculateButton: {
+            backgroundColor: '#FFD700',
+            paddingVertical: scaleSize(15),
+            borderRadius: scaleSize(8),
+            alignItems: 'center',
+            marginTop: scaleSize(10),
+        },
+        calculateButtonText: {
+            color: '#000',
+            fontWeight: 'bold',
+            fontSize: scaleFont(20),
+        },
+        clearButton: {
+            backgroundColor: '#FF3B30',
+            paddingVertical: scaleSize(15),
+            borderRadius: scaleSize(8),
+            alignItems: 'center',
+            marginTop: scaleSize(10),
+        },
+        clearButtonText: {
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: scaleFont(18),
+        },
+   
+        modalContainer: {
+            backgroundColor: '#fff',
+            borderRadius: scaleSize(15),
+            width: '85%',
+            paddingVertical: scaleSize(20),
+            paddingHorizontal: scaleSize(25),
+            alignItems: 'center',
+            elevation: 10,
+        },
+        modalTitle: { 
+            fontSize: 22, 
+            fontWeight: 'bold', 
+            marginBottom: 15 
+        },
+        modalItem: {
+            paddingVertical: scaleSize(10),
+            paddingHorizontal: scaleSize(15),
+            borderBottomWidth: 1,
+            borderBottomColor: '#f0f0f0',
+        },
+        modalItemText: {
+            fontSize: scaleFont(16),
+            color: '#000',
+        },
+   
     dateInputContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -396,6 +373,14 @@ const styles = StyleSheet.create({
 
     radioContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingVertical: 4,  // Reduced padding
+        marginLeft: 40,  // Adjusted to align with the input field
+    },
+
+    radioContainer: {
+        flexDirection: 'row',
         marginBottom: 15,
         alignItems: 'center',
     },
@@ -405,6 +390,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 20,
         marginTop: 10,
+        marginLeft:45,
     },
 
     radioButton: {
@@ -460,27 +446,44 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 15,
     },
+    resultBox: {
+        backgroundColor: '#f7f7f7',
+        borderRadius: scaleSize(10),
+        paddingVertical: scaleSize(15),
+        paddingHorizontal: scaleSize(20),
+        width: '100%',
+        marginBottom: scaleSize(15),
+        alignItems: 'center',  // Centering content
+    },
     resultRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
+        flexDirection: 'row',  // Forces horizontal alignment
+        justifyContent: 'space-between',  // Pushes label left & value right
+        alignItems: 'center',  // Align items vertically
+        width: '100%',  
+        paddingVertical: scaleSize(10),
         borderBottomWidth: 1,
         borderBottomColor: '#ddd',
     },
-    remarksRow: {
-        borderBottomWidth: 0, // No border for last row
-        justifyContent: 'flex-start',
-    },
+    
     resultLabel: {
-        fontSize: 16,
-        fontWeight: '500',
+        fontSize: scaleFont(16),
         color: '#444',
+        textAlign: 'center',  // Center the label
+        marginBottom: scaleSize(5),  // Add spacing below the label
     },
+
     resultValue: {
-        fontSize: 18,
+        fontSize: scaleFont(17),
         fontWeight: 'bold',
         color: '#333',
+        textAlign: 'center',  // Center the value
+    },
+
+    resultFinal: {
+        fontSize: scaleFont(19),
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',  // Center the value
     },
 
     clearButton: {
@@ -497,22 +500,22 @@ const styles = StyleSheet.create({
     },
 
     closeButton: {
-        marginTop: 20,
+        marginTop: scaleSize(20),
         backgroundColor: '#FFD700',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        borderRadius: 10,
+        paddingVertical: scaleSize(12),
+        paddingHorizontal: scaleSize(30),
+        borderRadius: scaleSize(10),
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 4,
         elevation: 5,
+        marginBottom: scaleSize(20),
     },
     closeButtonText: {
-        fontSize: 18,
+        fontSize: scaleFont(18),
         fontWeight: 'bold',
         color: '#222',
-        marginLeft:90,
     },
     
 });

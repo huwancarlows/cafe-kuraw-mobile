@@ -25,16 +25,16 @@ const NightShiftDifferential = () => {
     const [modalVisible, setModalVisible] = useState(false);
 
     const calculateNightShiftPay = () => {
-        if (!nightHours.trim() &&  !dailyRate.trim()) {
+        if (!nightHours.trim() && !dailyRate.trim()) {
             Alert.alert("Input Required", "Please fill out all the required fields.");
             return;
         }
-
+    
         const numNightHours = parseFloat(nightHours) || 0;
         const rate = parseFloat(dailyRate) || 0;
-
+    
         const nightShiftPay = rate * (1 / 8) * numNightHours * 0.1;
-        setTotalNightShiftPay(nightShiftPay.toFixed(2));
+        setTotalNightShiftPay(Math.trunc(nightShiftPay)); // No rounding, just drop decimals
         setModalVisible(true);
     };
 
@@ -98,7 +98,7 @@ const NightShiftDifferential = () => {
                         <View style={styles.resultBox}>
                             <View style={styles.resultRow}>
                                 <Text style={[styles.resultLabel, { textAlign: 'left' }]}>Number of Hours {'\n'}Between 10PM to 6AM:</Text>
-                                <Text style={styles.resultValue}>{nightHours}</Text>
+                                <Text style={styles.resultValue}>{nightHours} hours</Text>
                             </View>
 
                             <View style={styles.resultRow}>
@@ -106,10 +106,9 @@ const NightShiftDifferential = () => {
                                 <Text style={styles.resultValue}>₱{dailyRate}</Text>
                             </View>
 
-                            <View style={styles.resultRow}>
+                                <Text style={styles.resultLabel}></Text>
                                 <Text style={styles.resultLabel}>Night Shift Differential:</Text>
                                 <Text style={styles.resultValue}>₱{totalNightShiftPay || '0.00'}</Text>
-                            </View>
                         </View>
                         <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                             <Text style={styles.closeButtonText}>CLOSE</Text>

@@ -5,6 +5,7 @@ import {
     TextInput,
     StyleSheet,
     Dimensions,
+    PixelRatio,
     TouchableOpacity,
     ScrollView,
     Modal,
@@ -15,6 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 
+const { height, width } = Dimensions.get('window');
+
 const ThirteenthMonthPay = () => {
     const navigation = useNavigation();
     const [dailyRate, setDailyRate] = useState('');
@@ -23,6 +26,7 @@ const ThirteenthMonthPay = () => {
     const [toDate, setToDate] = useState(new Date());
     const [showFromDatePicker, setShowFromDatePicker] = useState(false);
     const [showToDatePicker, setShowToDatePicker] = useState(false);
+    const [totalWorkingDays, setTotalWorkingDays] = useState(0);  // State to store total working days
     const [calculatedThirteenthMonthPay, setCalculatedThirteenthMonthPay] = useState(''); // Store calculated 13th month pay
     const [numOfMonths, setNumOfMonths] = useState('');
     const [selectedOption, setSelectedOption] = useState(null);
@@ -32,9 +36,9 @@ const ThirteenthMonthPay = () => {
     const [modalVisible, setModalVisible] = useState(false);
 
     const handleCalculate = () => {
-        const daily = parseFloat(dailyRate) || 0;  
-        const restDaysPerWeek = parseInt(restDays) || 0;  
-        const monthsWorked = parseInt(numOfMonths) || 12; 
+        const daily = parseFloat(dailyRate) || 0;  // Ensure a valid number for daily rate
+        const restDaysPerWeek = parseInt(restDays) || 0;  // Convert rest days input
+        const monthsWorked = parseInt(numOfMonths) || 12; // Default to 12 months if not specified
     
         if (selectedOption === 'period') {
             if (!fromDate || !toDate) {
@@ -55,36 +59,30 @@ const ThirteenthMonthPay = () => {
                 return;
             }
 
+    
+            // ✅ Calculate total period (P2 - P1)
+            const totalDays = Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
 
-           
-         // ✅ Calculate total period (P2 - P1)
-        const totalDays = Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
-
-        if (totalDays < 30) {
-            Alert.alert("Invalid Calculation", "Must be atleast 1 Month to qualify for 13th Month Pay.");
-                            return;
-        }
-       
-        // ✅ Compute total rest days
-        const totalRestDays = (restDaysPerWeek * 4) * (totalDays / 30);
-
-        // ✅ Compute total working days
-        const workingDays = totalDays - totalRestDays;
-
-      // ✅ Apply the given formula for 13th-month pay (Period mode)
-      const calculatedThirteenthMonthPay = ((workingDays * daily) * (1 / 12));
-
-    // Store the result in state
-    setCalculatedThirteenthMonthPay(calculatedThirteenthMonthPay.toFixed(2));
-
-
-
-// Show modal with results
-setModalVisible(true);
-
+            if (totalDays < 30) {
+                Alert.alert("Invalid Calculation", "Must be atleast 1 Month to qualify for 13th Month Pay.");
+                                return;
+            }
+    
+            // ✅ Compute total rest days
+            const totalRestDays = (restDaysPerWeek * 4) * (totalDays / 30);
+    
+            // ✅ Compute total working days
+            const workingDays = totalDays - totalRestDays;
+    
+            // ✅ Apply the given formula for 13th-month pay (Period mode)
+            const calculatedThirteenthMonthPay = ((workingDays * daily) * (1 / 12));
+    
+            // Store the result
+            setCalculatedThirteenthMonthPay(calculatedThirteenthMonthPay.toFixed(2));
+    
         } else if (selectedOption === 'manual') {
             // ✅ Apply the given formula for 13th-month pay (Manual mode)
-            const calculatedThirteenthMonthPay = (monthsWorked * 26 * daily)* (1 / 12);
+            const calculatedThirteenthMonthPay = (monthsWorked * 26 * daily);
     
             // Store the result
             setCalculatedThirteenthMonthPay(calculatedThirteenthMonthPay.toFixed(2));
@@ -98,9 +96,6 @@ setModalVisible(true);
         setRestDays('');
         setDailyRate('');
         setNumOfMonths(null);
-        setFromDate(new Date());
-        setToDate(new Date());
-
     };
 
     return (
@@ -127,39 +122,43 @@ setModalVisible(true);
                                 style={styles.periodButton} 
                                 onPress={() => setSelectedOption('period')} // Set selected option
                             >
-                                <Text style={styles.periodButtonText}>PERIOD</Text>
+                                <Text style={[styles.periodButtonText, 
+                                    selectedOption === 'period' && { fontWeight: 'bold' }]}> PERIOD
+                                </Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
                                 style={styles.manualButton} 
                                 onPress={() => setSelectedOption('manual')} // Set selected option
                             >
-                                <Text style={styles.manualButtonText}>MANUAL</Text>
+                                <Text style={[styles.manualButtonText, 
+                                    selectedOption === 'manual' && { fontWeight: 'bold' }]}> MANUAL
+                                </Text>
                             </TouchableOpacity>
                         </View>
 
-                       {/* Show Period Date Pickers when PERIOD button is clicked */}
+                        {/* Show Period Date Pickers when PERIOD button is clicked */}
                         {selectedOption === 'period' && (
                             <View>
                                 <Text style={styles.label}>Period:</Text>
-                                    <View style={styles.dateInputContainer}>
-                                        <TouchableOpacity style={styles.dateInput} onPress={() => setShowFromDatePicker(true)}>
-                                            <Text>{fromDate.toDateString()}</Text>
-                                        </TouchableOpacity>
-                                        <Text style={styles.toText}>to</Text>
-                                        <TouchableOpacity style={styles.dateInput} onPress={() => setShowToDatePicker(true)}>
-                                            <Text>{toDate.toDateString()}</Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                        {/* Show Number of Rest Days per Week */}
-                                    <View>
-                                        <Text style={styles.label}>Number of Rest Days per Week:</Text>
-                                        <TextInput 
-                                            style={styles.input} 
-                                            value={restDays} 
-                                            onChangeText={setRestDays} 
-                                            keyboardType="numeric"/>
-                                    </View>
+                                <View style={styles.dateInputContainer}>
+                                    <TouchableOpacity style={styles.dateInput} onPress={() => setShowFromDatePicker(true)}>
+                                        <Text>{fromDate.toDateString()}</Text>
+                                    </TouchableOpacity>
+                                    <Text style={styles.toText}>to</Text>
+                                    <TouchableOpacity style={styles.dateInput} onPress={() => setShowToDatePicker(true)}>
+                                        <Text>{toDate.toDateString()}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View>
+                                <Text style={styles.label}>Number of Rest Days Per Week:</Text>
+                                <TextInput 
+                                    style={styles.input} 
+                                    value={restDays} 
+                                    onChangeText={setRestDays} 
+                                    keyboardType="numeric" 
+                                    placeholder="Rest Days"
+                                />
+                                </View>
                             </View>
                         )}
 
@@ -210,18 +209,18 @@ setModalVisible(true);
                     </TouchableOpacity>
                 </View>
                 <Modal visible={modalVisible} transparent animationType="slide">
-                        <View style={styles.modalContainer}>
-                            <View style={styles.modalContent}>
-                                <Text style={styles.modalTitle}>Calculation Results</Text>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>Calculation Results</Text>
 
-                                <View style={styles.resultContainer}>
-                                    <View style={styles.resultRow}>
-                                        <Text style={styles.resultLabel}>Actual Daily Rate:</Text>
-                                        <Text style={styles.resultValue}>₱{dailyRate}</Text>
-                                    </View>
+      <View style={styles.resultContainer}>
+        <View style={styles.resultRow}>
+          <Text style={styles.resultLabel}>Actual Daily Rate:</Text>
+          <Text style={styles.resultValue}>₱{dailyRate}</Text>
+        </View>
 
-                                {/* ✅ Show "Period" and "Number of Rest Days Per Week" only if Period button is clicked */}
-                                {selectedOption === 'period' && (
+      {/* ✅ Show "Period" and "Number of Rest Days Per Week" only if Period button is clicked */}
+      {selectedOption === 'period' && (
                                 <>
                                 <View style={styles.resultRow}>
                                     <Text style={styles.resultLabel}>Period:</Text>
@@ -232,38 +231,35 @@ setModalVisible(true);
                                 <View style={styles.resultRow}>
                                     {/* Display Number of Rest Days Per Week */}
                                     <Text style={styles.resultLabel}>Number of Rest Days Per Week:</Text>
-                                    <Text style={styles.resultValue}>{restDays} day/s</Text>
+                                    <Text style={styles.resultValue}>{restDays} day</Text>
                                 </View>
                                 </>
                                 )}
-                                
-                                    {/* ✅ Show "Number of Months" only if Manual button is clicked */}
-                                    {selectedOption === 'manual' && (
-                                        <View style={styles.resultRow}>
-                                            <Text style={styles.resultLabel}>Number of Months:</Text>
-                                            <Text style={styles.resultValue}>{numOfMonths} month/s</Text>
-                                        </View>
-                                    )}
+        {/* ✅ Show "Number of Months" only if Manual button is clicked */}
+        {selectedOption === 'manual' && (
+          <View style={styles.resultRow}>
+            <Text style={styles.resultLabel}>Number of Months:</Text>
+            <Text style={styles.resultValue}>{numOfMonths} month</Text>
+          </View>
+        )}
 
-                                    <View style={styles.resultRow}>
-                                        <Text style={styles.resultLabel}>Total 13th Month Pay:</Text>
-                                        <Text style={styles.resultValue}>₱{calculatedThirteenthMonthPay}</Text>
-                                    </View>
-                                </View>
+        <Text style={styles.resultLabel}></Text>
+        <Text style={styles.resultLabel}>13th Month Pay:</Text>
+        <Text style={styles.resultValue}>₱{Number(calculatedThirteenthMonthPay).toLocaleString()}</Text>
+      </View>
 
-                                <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                                    <Text style={styles.closeButtonText}>CLOSE</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                </Modal>
+      {/* ✅ Move close button inside modalContent */}
+      <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+        <Text style={styles.closeButtonText}>CLOSE</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
 
             </ScrollView>
         </View>
     );
 };
-
-const { width, height } = Dimensions.get('window');
 
 const scaleFont = (size) => size * PixelRatio.getFontScale();
 const scaleSize = (size) => (size / 375) * width; // 375 is a common baseline width
@@ -446,14 +442,23 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     resultLabel: {
-        fontSize: 16,
-        fontWeight: '500',
+        fontSize: scaleFont(16),
         color: '#444',
+        textAlign: 'center',  // Center the label
+        marginBottom: scaleSize(5),  // Add spacing below the label
     },
+
     resultValue: {
-        fontSize: 18,
+            fontSize: scaleFont(17),
+            fontWeight: 'bold',
+            color: '#333',
+            textAlign: 'center',  // Center the value
+        },
+    resultFinal: {
+        fontSize: scaleFont(19),
         fontWeight: 'bold',
         color: '#333',
+        textAlign: 'center',  // Center the value
     },
 
     clearButton: {
@@ -479,29 +484,27 @@ const styles = StyleSheet.create({
     },
     periodButton: {
         backgroundColor: '#FFD700',
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 8,
         alignItems: 'center',
-        marginTop: 4,
-        width: 100, 
+        marginHorizontal: 5, 
+        width: 170, 
     },
     periodButtonText: {
         color: '#000000',
-        fontWeight: 'bold',
         fontSize: 18,
     },
 
     manualButton: {
         backgroundColor: '#FFD700',
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 8,
         alignItems: 'center',
-        marginTop: 4,
-        width: 100, 
+        marginHorizontal: 5, 
+        width: 170, 
     },
     manualButtonText: {
         color: '#000000',
-        fontWeight: 'bold',
         fontSize: 18,
     },
 
@@ -521,7 +524,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#222',
-    },  
+    },
     
     
 });

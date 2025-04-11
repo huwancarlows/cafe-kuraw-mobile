@@ -88,9 +88,9 @@ const MinimumWage = () => {
 
         // Check wage compliance
         if (daily >= minWage) {
-            setRemarks("NO VIOLATION. \nWAGE IS ABOVE OR EQUAL TO MINIMUM")
+            setRemarks("NO VIOLATION: \nWAGE IS ABOVE OR EQUAL TO MINIMUM")
         } else {
-            setRemarks("VIOLATION.\nUNDERPAYMENT OF MINIMUM WAGE");
+            setRemarks("VIOLATION:\nUNDERPAYMENT OF MINIMUM WAGE");
         }
 
         // Total Wage Differential Calculation
@@ -197,12 +197,12 @@ const MinimumWage = () => {
                     </TouchableOpacity>
                 </View>
 
-                <Modal visible={modalVisible} transparent animationType="slide">
+                <Modal visible={modalVisible} transparent animationType="fade">
                     <View style={styles.modalOverlay}>
                     <View style={styles.modalContainer}>
                             <Text style={styles.modalTitle}>Calculation Results</Text>
 
-                            <View style={styles.resultContainer}>
+                                <View style={styles.resultBox}> 
                                 <View style={styles.resultRow}>
                                     <Text style={styles.resultLabel}>Total Wage Differential:</Text>
                                     <Text style={styles.resultValue}>₱{totalWageDifferential}</Text>
@@ -218,14 +218,12 @@ const MinimumWage = () => {
                                     <Text style={styles.resultValue}>{wholePeriod} days</Text>
                                 </View>
 
-                                <View style={[styles.resultRow, styles.remarksRow]}>
-                                    <Text style={styles.resultLabel}>Remarks:</Text>
-                                </View>
+                                <Text style={styles.resultLabel}></Text>
                                 <Text style={{ 
                                     fontSize: 16, 
                                     fontWeight: 'bold', 
                                     textAlign: 'center',  
-                                    color: remarks.startsWith("NO VIOLATION") ? '#007F00' : '#FF4444' 
+                                    color: remarks.startsWith("NO VIOLATION:") ? '#007F00' : '#FF4444' 
                                 }}>
                                     {remarks}
                                 </Text>
@@ -251,138 +249,87 @@ const { width, height } = Dimensions.get('window');
 const scaleFont = (size) => size * PixelRatio.getFontScale();
 const scaleSize = (size) => (size / 375) * width; // 375 is a common baseline width
 
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
+    container: { 
+        flex: 1, 
+        backgroundColor: '#000' 
     },
-    background: {
-        ...StyleSheet.absoluteFillObject,
+    background: { 
+        ...StyleSheet.absoluteFillObject 
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingTop: height * 0.08,  // Adjusts for notch screens
-        paddingHorizontal: width * 0.05,
-        paddingBottom: height * 0.02,
+    header: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        paddingTop: 60, 
+        paddingHorizontal: 20, 
+        paddingBottom: 20 
     },
-    backIcon: {
-        marginRight: width * 0.03, 
-    },
-    headerTitle: {
-        fontSize: scaleFont(28),
-        fontWeight: 'bold',
-        color: '#fff',
-        marginLeft: width * 0.14,
+    headerTitle: { 
+        fontSize: 32, 
+        fontWeight: 'bold', 
+        color: '#fff', 
+        marginLeft: 50,
         flex: 1,
     },
-    content: {
-        flexGrow: 1,
-        alignItems: 'center',
-        paddingBottom: height * 0.05,
+    content: { 
+        flexGrow: 1, 
+        alignItems: 'center', 
+        paddingBottom: 50 
     },
-    formContainer: {
-        top: '2%',
-        width: '90%',
-        height: '95%',
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        padding: width * 0.05,
-        elevation: 5,
+    formContainer: { 
+        width: '90%', 
+        backgroundColor: '#fff', 
+        borderRadius: 20, 
+        padding: 20, 
+        elevation: 5 
     },
-    label: {
-        fontSize: scaleFont(15),
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: height * 0.005,
+    label: { 
+        fontSize: 16, 
+        fontWeight: 'bold', 
+        marginBottom: 5 
     },
-    input: {
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingVertical: height * 0.015,
-        paddingHorizontal: width * 0.04,
-        marginBottom: height * 0.02,
-        fontSize: scaleFont(15),
-        color: '#000',
-        width: '100%',
-        minHeight: height * 0.06, // Ensures uniform height
+    input: { 
+        borderColor: '#000', 
+        borderWidth: 1, 
+        borderRadius: 8, 
+        padding: 10, 
+        marginBottom: 15, 
+        fontSize: 16 
     },
-    dropdownContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: width * 0.04,
-        paddingVertical: height * 0.015,
-        marginBottom: height * 0.02,
-    },
-    dropdownText: {
-        fontSize: scaleFont(16),
-        color: '#000',
-    },
-    modalItem: {
-        paddingVertical: height * 0.012,
-        paddingHorizontal: width * 0.04,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    modalItemText: {
-        fontSize: scaleFont(16),
-        color: '#000',
+    dateInput: { 
+        borderColor: '#000', 
+        borderWidth: 1, 
+        borderRadius: 8, 
+        padding: 10, 
+        marginBottom: 15, 
+        alignItems: 'center' 
     },
     calculateButton: {
         backgroundColor: '#FFD700',
-        paddingVertical: height * 0.02,
-        borderRadius: 8,
+        paddingVertical: scaleSize(15),
+        borderRadius: scaleSize(8),
         alignItems: 'center',
-        marginTop: height * 0.03,
-        width: '100%',
+        marginTop: scaleSize(10),
     },
     calculateButtonText: {
         color: '#000',
         fontWeight: 'bold',
-        fontSize: scaleFont(18),
+        fontSize: scaleFont(20),
     },
     clearButton: {
         backgroundColor: '#FF3B30',
-        paddingVertical: height * 0.02,
-        borderRadius: 8,
+        paddingVertical: scaleSize(15),
+        borderRadius: scaleSize(8),
         alignItems: 'center',
-        marginTop: height * 0.015,
-        width: '100%',
+        marginTop: scaleSize(10),
     },
     clearButtonText: {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: scaleFont(18),
     },
-    dateInputContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: height * 0.02,
-    },
-    dateInput: {
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingVertical: height * 0.015,
-        paddingHorizontal: width * 0.04,
-        width: '45%',
-        alignItems: 'center',
-    },
-    toText: {
-        fontSize: scaleFont(16),
-        fontWeight: 'bold',
-        color: '#000',
-        marginHorizontal: width * 0.03,
-    },
+
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -423,51 +370,95 @@ const styles = StyleSheet.create({
         alignItems: 'center',  // Centering content
     },
     resultRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: height * 0.012,
+        flexDirection: 'row',  // Forces horizontal alignment
+        justifyContent: 'space-between',  // Pushes label left & value right
+        alignItems: 'center',  // Align items vertically
+        width: '100%',  
+        paddingVertical: scaleSize(10),
         borderBottomWidth: 1,
         borderBottomColor: '#ddd',
     },
-    remarksRow: {
-        borderBottomWidth: 0,
-        justifyContent: 'flex-start',
-    },
+    
     resultLabel: {
         fontSize: scaleFont(16),
-        fontWeight: '500',
         color: '#444',
+        textAlign: 'center',  // Center the label
+        marginBottom: scaleSize(5),  // Add spacing below the label
     },
+
     resultValue: {
-        fontSize: scaleFont(18),
+        fontSize: scaleFont(17),
         fontWeight: 'bold',
         color: '#333',
+        textAlign: 'center',  // Center the value
     },
-    remarksText: {
+
+    resultFinal: {
+        fontSize: scaleFont(19),
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',  // Center the value
+    },
+
+    resultDOR: {
+        fontSize: scaleFont(15),
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',  // Center the value
+    },
+
+    resultHighlight: {
         fontSize: scaleFont(18),
-        textAlign: 'center',
-        paddingHorizontal: width * 0.03,
-        paddingTop: height * 0.008,
+        fontWeight: 'bold',
+        color: '#222',
     },
     closeButton: {
-        marginTop: height * 0.02,
+        marginTop: scaleSize(20),
         backgroundColor: '#FFD700',
-        paddingVertical: height * 0.018,
-        paddingHorizontal: width * 0.08,
-        borderRadius: 10,
+        paddingVertical: scaleSize(12),
+        paddingHorizontal: scaleSize(30),
+        borderRadius: scaleSize(10),
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 4,
         elevation: 5,
+        marginBottom: scaleSize(20),
     },
     closeButtonText: {
         fontSize: scaleFont(18),
         fontWeight: 'bold',
         color: '#222',
     },
+    buttonContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    
+    toggleButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 5,  // Adds spacing between buttons
+    },
+    
+    yellowButton: {
+        backgroundColor: '#FFD700',  // Yellow background
+    },
+    
+    toggleButtonText: {
+        color: '#000',  // Black text
+        fontSize: 16,
+    },
+    activeButton: {
+        backgroundColor: "#FFD700", // Darker yellow shade for active effect
+    },
+    boldText: {
+        fontWeight: "bold", // Make text bold when button is clicked
+    },
+    
 });
-
 
 export default MinimumWage;

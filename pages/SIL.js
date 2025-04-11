@@ -99,10 +99,6 @@ const ServiceIncentiveLeave = () => {
     };
     
     
-    
-    
-    
-    
     const clearFields = () => {
         setDateHired(new Date());
         setDailyRate('');
@@ -226,12 +222,10 @@ const ServiceIncentiveLeave = () => {
                         <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                             <Text style={styles.closeButtonText}>CLOSE</Text>
                         </TouchableOpacity>
-    
                     </View>
                     </View>
                 </Modal>
             </ScrollView>
-
         </View>
     );
 };
@@ -258,7 +252,7 @@ const styles = StyleSheet.create({
         fontSize: 24, 
         fontWeight: 'bold', 
         color: '#fff', 
-        marginLeft: 30,
+        marginLeft: 35,
         flex: 1,
     },
     content: { 
@@ -389,6 +383,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',  // Center the value
     },
 
+    resultDOR: {
+        fontSize: scaleFont(15),
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',  // Center the value
+    },
+
     resultHighlight: {
         fontSize: scaleFont(18),
         fontWeight: 'bold',
@@ -411,7 +412,36 @@ const styles = StyleSheet.create({
         fontSize: scaleFont(18),
         fontWeight: 'bold',
         color: '#222',
-    }
+    },
+    buttonContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    
+    toggleButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 5,  // Adds spacing between buttons
+    },
+    
+    yellowButton: {
+        backgroundColor: '#FFD700',  // Yellow background
+    },
+    
+    toggleButtonText: {
+        color: '#000',  // Black text
+        fontSize: 16,
+    },
+    activeButton: {
+        backgroundColor: "#FFD700", // Darker yellow shade for active effect
+    },
+    boldText: {
+        fontWeight: "bold", // Make text bold when button is clicked
+    },
+    
 });
 
 export default ServiceIncentiveLeave;
