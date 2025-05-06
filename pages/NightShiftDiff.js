@@ -140,13 +140,29 @@ const styles = StyleSheet.create({
     },
     backIcon: {
         marginRight: width * 0.02,
+        marginTop:20,
+        color: '#FFD700',
     },
+    header: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        paddingTop: 60, 
+        paddingHorizontal: 20, 
+        paddingBottom: 20 
+    },
+         
     headerTitle: {
-        fontSize: width * 0.06,
-        fontWeight: 'bold',
-        color: '#fff',
-        flex: 1,
+        fontSize: height * 0.03,
+        fontWeight: '900',
+        color: '#FFD700',
         textAlign: 'center',
+        flex: 1, // Ensures it takes up available space to center
+        fontFamily: 'Helvetica Neue',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 5,
+        marginRight:16,
+        marginTop:20,
     },
     content: {
         flexGrow: 1,
@@ -154,7 +170,7 @@ const styles = StyleSheet.create({
         paddingBottom: height * 0.05,
     },
     formContainer: {
-        marginTop: height * 0.05,
+        marginTop: height * 0.02,
         width: '90%',
         backgroundColor: '#fff',
         borderRadius: 20,

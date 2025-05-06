@@ -18,6 +18,7 @@ import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchHolidays } from '../services/HolidayService';
 
+
 const { width } = Dimensions.get('window');
 
 const HolidayPay = ({ navigation }) => {
@@ -121,9 +122,16 @@ const HolidayPay = ({ navigation }) => {
         <View style={styles.container}>
                    <LinearGradient colors={['#2a2a2a', '#000']} style={styles.background} />
                    <View style={styles.header}>
-                       <Ionicons name="arrow-back-outline" size={32} color="white" onPress={() => navigation.goBack()} />
-                       <Text style={styles.headerTitle}>HOLIDAY PAY</Text>
-                   </View>
+                    <Ionicons 
+                        name="arrow-back-outline" 
+                        size={32} 
+                        color="white" 
+                        style={styles.backIcon} 
+                        onPress={() => navigation.navigate('Home')} // Navigate back to HomePage
+                    />
+
+                        <Text style={styles.headerTitle}>HOLIDAY PAY</Text>
+                    </View>
           <ScrollView contentContainerStyle={styles.content}>
                           <View style={styles.formContainer}>
                     <Text style={styles.label}>Period:</Text>
@@ -258,6 +266,14 @@ const styles = StyleSheet.create({
         background: { 
             ...StyleSheet.absoluteFillObject 
         },
+            background: { 
+            ...StyleSheet.absoluteFillObject 
+        },
+        backIcon: {
+            marginRight: 10, // Adds spacing between icon and title
+            marginTop:20,
+            color: '#FFD700',
+        },
         header: { 
             flexDirection: 'row', 
             alignItems: 'center', 
@@ -265,24 +281,33 @@ const styles = StyleSheet.create({
             paddingHorizontal: 20, 
             paddingBottom: 20 
         },
-        headerTitle: { 
-            fontSize: 32, 
-            fontWeight: 'bold', 
-            color: '#fff', 
-            marginLeft: 90,
-            flex: 1,
+             
+        headerTitle: {
+            fontSize: 32,
+            fontWeight: '900',
+            color: '#FFD700',
+            textAlign: 'center',
+            flex: 1, // Ensures it takes up available space to center
+            fontFamily: 'Helvetica Neue',
+            textShadowColor: 'rgba(0, 0, 0, 0.3)',
+            textShadowOffset: { width: 1, height: 1 },
+            textShadowRadius: 5,
+            marginRight:16,
+            marginTop:20,
         },
         content: { 
             flexGrow: 1, 
             alignItems: 'center', 
             paddingBottom: 50 
         },
-        formContainer: { 
-            width: '90%', 
-            backgroundColor: '#fff', 
-            borderRadius: 20, 
-            padding: 20, 
-            elevation: 5 
+        formContainer: {
+            top: '2%',
+            width: '90%',
+            height: '90%',
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            padding: 20,
+            elevation: 5,
         },
         label: { 
             fontSize: 16, 

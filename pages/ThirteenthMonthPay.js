@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 
+
 const { height, width } = Dimensions.get('window');
 
 const ThirteenthMonthPay = () => {
@@ -29,13 +30,30 @@ const ThirteenthMonthPay = () => {
     const [totalWorkingDays, setTotalWorkingDays] = useState(0);  // State to store total working days
     const [calculatedThirteenthMonthPay, setCalculatedThirteenthMonthPay] = useState(''); // Store calculated 13th month pay
     const [numOfMonths, setNumOfMonths] = useState('');
-    const [selectedOption, setSelectedOption] = useState(null);
-   
-
+    const [selectedOption, setSelectedOption] = useState('period'); // This defaults to 'period'
 
     const [modalVisible, setModalVisible] = useState(false);
 
     const handleCalculate = () => {
+        if (!dailyRate) {
+            Alert.alert("Invalid Input", "Please enter your daily rate.");
+            return;
+        }
+        
+        if (selectedOption === 'period') {
+            if (!fromDate || !toDate || !restDays) {
+                Alert.alert("Invalid Input", "Please enter the period dates and rest days.");
+                return;
+            }
+        }
+        
+        if (selectedOption === 'manual') {
+            if (!numOfMonths) {
+                Alert.alert("Invalid Input", "Please enter the number of months.");
+                return;
+            }
+        }
+        
         const daily = parseFloat(dailyRate) || 0;  // Ensure a valid number for daily rate
         const restDaysPerWeek = parseInt(restDays) || 0;  // Convert rest days input
         const monthsWorked = parseInt(numOfMonths) || 12; // Default to 12 months if not specified
@@ -80,6 +98,7 @@ const ThirteenthMonthPay = () => {
             // Store the result
             setCalculatedThirteenthMonthPay(calculatedThirteenthMonthPay.toFixed(2));
     
+    
         } else if (selectedOption === 'manual') {
             // ✅ Apply the given formula for 13th-month pay (Manual mode)
             const calculatedThirteenthMonthPay = (monthsWorked * 26 * daily);
@@ -109,7 +128,7 @@ const ThirteenthMonthPay = () => {
                 style={styles.backIcon} 
                 onPress={() => navigation.navigate('Home')} // Navigate back to HomePage
             />
-            <Text style={styles.headerTitle}>13th Month Pay</Text>
+                <Text style={styles.headerTitle}>13TH MONTH PAY</Text>
             </View>
 
             
@@ -245,7 +264,7 @@ const ThirteenthMonthPay = () => {
 
         <Text style={styles.resultLabel}></Text>
         <Text style={styles.resultLabel}>13th Month Pay:</Text>
-        <Text style={styles.resultValue}>₱{Number(calculatedThirteenthMonthPay).toLocaleString()}</Text>
+        <Text style={styles.resultValue}>₱{Math.trunc(Number(calculatedThirteenthMonthPay)).toLocaleString()}</Text>
       </View>
 
       {/* ✅ Move close button inside modalContent */}
@@ -273,24 +292,32 @@ const styles = StyleSheet.create({
     background: {
         ...StyleSheet.absoluteFillObject,
     },
-    header: {
-        flexDirection: 'row',  // Arrange items in a row
-        alignItems: 'center',  // Align vertically in the center
-        paddingTop: 60,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
     backIcon: {
         marginRight: 10, // Adds spacing between icon and title
+        marginTop:20,
+        color: '#FFD700',
     },
+    header: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        paddingTop: 60, 
+        paddingHorizontal: 20, 
+        paddingBottom: 20 
+    },
+         
     headerTitle: {
         fontSize: 32,
-        fontWeight: 'bold',
-        color: '#fff',
+        fontWeight: '900',
+        color: '#FFD700',
         textAlign: 'center',
-        flex: 1, // Takes up available space to center properly
+        flex: 1, // Ensures it takes up available space to center
+        fontFamily: 'Helvetica Neue',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 5,
+        marginRight:16,
+        marginTop:20,
     },
-    
     
     content: {
         flexGrow: 1,
@@ -300,7 +327,7 @@ const styles = StyleSheet.create({
     formContainer: {
         top: '2%',
         width: '90%',
-        height: '80%',
+        height: '90%',
         backgroundColor: '#fff',
         borderRadius: 20,
         padding: 20,
@@ -482,13 +509,14 @@ const styles = StyleSheet.create({
         marginTop: -4,
         marginBottom:10,
     },
+    
     periodButton: {
         backgroundColor: '#FFD700',
         paddingVertical: 10,
         borderRadius: 8,
         alignItems: 'center',
         marginHorizontal: 5, 
-        width: 170, 
+        width: 150, 
     },
     periodButtonText: {
         color: '#000000',
@@ -501,7 +529,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         marginHorizontal: 5, 
-        width: 170, 
+        width: 150, 
     },
     manualButtonText: {
         color: '#000000',

@@ -258,6 +258,11 @@ const styles = StyleSheet.create({
     background: { 
         ...StyleSheet.absoluteFillObject 
     },
+    backIcon: {
+        marginRight: 10, // Adds spacing between icon and title
+        marginTop:20,
+        color: '#FFD700',
+    },
     header: { 
         flexDirection: 'row', 
         alignItems: 'center', 
@@ -265,24 +270,33 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, 
         paddingBottom: 20 
     },
-    headerTitle: { 
-        fontSize: 32, 
-        fontWeight: 'bold', 
-        color: '#fff', 
-        marginLeft: 50,
-        flex: 1,
+         
+    headerTitle: {
+        fontSize: 32,
+        fontWeight: '900',
+        color: '#FFD700',
+        textAlign: 'center',
+        flex: 1, // Ensures it takes up available space to center
+        fontFamily: 'Helvetica Neue',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 5,
+        marginRight:16,
+        marginTop:20,
     },
     content: { 
         flexGrow: 1, 
         alignItems: 'center', 
         paddingBottom: 50 
     },
-    formContainer: { 
-        width: '90%', 
-        backgroundColor: '#fff', 
-        borderRadius: 20, 
-        padding: 20, 
-        elevation: 5 
+    formContainer: {
+        top: '2%',
+        width: '90%',
+        height: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 20,
+        elevation: 5,
     },
     label: { 
         fontSize: 16, 

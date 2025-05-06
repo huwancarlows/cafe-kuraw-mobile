@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { height, width } = Dimensions.get('window');
 
@@ -80,9 +81,15 @@ const SeparationPay = () => {
          <View style={styles.container}>
                     <LinearGradient colors={['#2a2a2a', '#000']} style={styles.background} />
                     <View style={styles.header}>
-                        <Ionicons name="arrow-back-outline" size={32} color="white" onPress={() => navigation.goBack()} />
-                        <Text style={styles.headerTitle}>SEPARATION PAY</Text>
-                    </View>
+                                <Ionicons 
+                                    name="arrow-back-outline" 
+                                    size={32} 
+                                    color="white" 
+                                    style={styles.backIcon} 
+                                    onPress={() => navigation.navigate('Home')} // Navigate back to HomePage
+                                />
+                <Text style={styles.headerTitle}>SEPARATION PAY</Text>
+            </View>
             
             <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.formContainer}>
@@ -198,14 +205,25 @@ const SeparationPay = () => {
         <Text style={styles.resultValue}> ₱{Math.trunc(Number(separationPay)).toLocaleString()}</Text>
       </View>
 
-      <Text style={styles.resultNote}>
-        Note:{" "}
+      <Text
+        style={[
+            styles.resultNote,
+            (Reason !== "Retrenchment" &&
+            Reason !== "Closure" &&
+            Reason !== "Sickness not curable" &&
+            Reason !== "Installation" &&
+            Reason !== "Redundancy" &&
+            Reason !== "Position not feasible") && { color: "red" },
+        ]}
+        >
+        Remarks:{" "}
         {Reason === "Retrenchment" || Reason === "Closure" || Reason === "Sickness not curable"
-          ? "Half Month Pay"
-          : Reason === "Installation" || Reason === "Redundancy" || Reason === "Position not feasible"
-          ? "Full Month Pay"
-          : "Sorry, not eligible for Separation Pay"}
-      </Text>
+            ? "Half Month Pay"
+            : Reason === "Installation" || Reason === "Redundancy" || Reason === "Position not feasible"
+            ? "Full Month Pay"
+            : "Sorry, not eligible for Separation Pay"}
+    </Text>
+
 
       {/* ✅ Close button moved inside modalContainer */}
       <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
@@ -233,6 +251,11 @@ const styles = StyleSheet.create({
         background: { 
             ...StyleSheet.absoluteFillObject 
         },
+        backIcon: {
+            marginRight: 10, // Adds spacing between icon and title
+            marginTop:20,
+            color: '#FFD700',
+        },
         header: { 
             flexDirection: 'row', 
             alignItems: 'center', 
@@ -240,24 +263,34 @@ const styles = StyleSheet.create({
             paddingHorizontal: 20, 
             paddingBottom: 20 
         },
-        headerTitle: { 
-            fontSize: 32, 
-            fontWeight: 'bold', 
-            color: '#fff', 
-            marginLeft: 50,
-            flex: 1,
+             
+        headerTitle: {
+            fontSize: 32,
+            fontWeight: '900',
+            color: '#FFD700',
+            textAlign: 'center',
+            flex: 1, // Ensures it takes up available space to center
+            fontFamily: 'Helvetica Neue',
+            textShadowColor: 'rgba(0, 0, 0, 0.3)',
+            textShadowOffset: { width: 1, height: 1 },
+            textShadowRadius: 5,
+            marginRight:16,
+            marginTop:20,
         },
+        
         content: { 
             flexGrow: 1, 
             alignItems: 'center', 
             paddingBottom: 50 
         },
-        formContainer: { 
-            width: '90%', 
-            backgroundColor: '#fff', 
-            borderRadius: 20, 
-            padding: 20, 
-            elevation: 5 
+        formContainer: {
+            top: '2%',
+            width: '90%',
+            height: '90%',
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            padding: 20,
+            elevation: 5,
         },
         label: { 
             fontSize: 16, 
@@ -363,12 +396,22 @@ const styles = StyleSheet.create({
             textAlign: 'center',  // Center the value
         },
     
-        resultNote: {
-            fontSize: scaleFont(16),
-            color: '#333', // Default color
+        remarks: {
+            fontSize: scaleFont(20),
             fontWeight: 'bold',
             textAlign: 'center',
+            marginTop: scaleSize(10),
           },
+          remarksIneligible: {
+            color: 'red',
+            fontWeight: 'bold',
+          },
+          remarksEligible: {
+            color: '#333',
+            fontWeight: 'bold',
+          },
+          
+          
         clearButton: {
             backgroundColor: '#FF3B30',
             paddingVertical: 15,

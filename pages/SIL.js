@@ -111,7 +111,13 @@ const ServiceIncentiveLeave = () => {
         <View style={styles.container}>
             <LinearGradient colors={['#2a2a2a', '#000']} style={styles.background} />
             <View style={styles.header}>
-                <Ionicons name="arrow-back-outline" size={32} color="white" onPress={() => navigation.goBack()} />
+                            <Ionicons 
+                                name="arrow-back-outline" 
+                                size={32} 
+                                color="white" 
+                                style={styles.backIcon} 
+                                onPress={() => navigation.navigate('Home')} 
+                            />
                 <Text style={styles.headerTitle}>SERVICE INCENTIVE LEAVE</Text>
             </View>
             <ScrollView contentContainerStyle={styles.content}>
@@ -241,6 +247,11 @@ const styles = StyleSheet.create({
     background: { 
         ...StyleSheet.absoluteFillObject 
     },
+    backIcon: {
+        marginRight: width * 0.02,
+        marginTop:20,
+        color: '#FFD700',
+    },
     header: { 
         flexDirection: 'row', 
         alignItems: 'center', 
@@ -248,24 +259,33 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, 
         paddingBottom: 20 
     },
-    headerTitle: { 
-        fontSize: 24, 
-        fontWeight: 'bold', 
-        color: '#fff', 
-        marginLeft: 35,
-        flex: 1,
+         
+    headerTitle: {
+        fontSize: height * 0.03,
+        fontWeight: '900',
+        color: '#FFD700',
+        textAlign: 'center',
+        flex: 1, // Ensures it takes up available space to center
+        fontFamily: 'Helvetica Neue',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 5,
+        marginRight:16,
+        marginTop:20,
     },
     content: { 
         flexGrow: 1, 
         alignItems: 'center', 
         paddingBottom: 50 
     },
-    formContainer: { 
-        width: '90%', 
-        backgroundColor: '#fff', 
-        borderRadius: 20, 
-        padding: 20, 
-        elevation: 5 
+    formContainer: {
+        top: '2%',
+        width: '90%',
+        height: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 20,
+        elevation: 5,
     },
     label: { 
         fontSize: 16, 
